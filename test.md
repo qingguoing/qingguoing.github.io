@@ -1,4 +1,4 @@
-
+利用已有语法编写一个 babel 插件
 
 babel-plugin-pipe
 
@@ -33,12 +33,52 @@ const { a : { b: { c = 'test' } } } = test;
 const { a } = test || {};
 ```
 
-插件虽然解决了从 `null` 或者 `undefined` 上取值的问题，但对于`叶子节点`为 `null` 的情况却无法优化。
+插件虽然解决了从 `null` 或者 `undefined` 上取值的问题，但对于`叶子节点`为 `null` 的情况却无法优化。稍有不慎，可能出现下面这种低级错误：
+
+![此处有个 null 年的图片]()
 
 ### @babel/plugin-proposal-pipeline-operator
 
-插件可以与 [@babel/plugin-proposal-pipeline-operator] 插件配合使用，利用 `pipeline-operator` 语法做过滤转换处理。
+很多时候，我们需要对上面的 null 进行兜底，或者对某些字段进行格式化。通常写法如下：
+
+```js
+let { num } = test;
+num = filterA(num);
+```
+
+而现在，我们的插件可以与 [@babel/plugin-proposal-pipeline-operator](https://babeljs.io/docs/en/babel-plugin-proposal-pipeline-operator) 插件配合使用，利用 `pipeline-operator` 语法做过滤转换处理。下面是采用了 `pipe` 插件后的写法：
+
+```js
+const { num = 0 |> filterA } = test;
+```
+
+出此之外，支持过滤函数的串联调用执行：
+
+```js
+const { num = 0 |> filterA |> filterB |> filterC } = test;
+```
+
+ps: 更多的 pipeline-operator 语法请参考 [babel 官网](https://babeljs.io/docs/en/babel-plugin-proposal-pipeline-operator)
 
 ### 如何使用
 
-最后，如果你觉得好用，欢迎 star :)
+1. 项目目录下安装插件：
+
+```js
+npm i -D babel-plugin-pipe
+```
+
+2. `.babelrc` 文件内开启该插件。为了防止其它插件对于当前插件匹配格式的影响，请把插件置为 `plugins` 数组的第一个。
+
+3. 在需要开启插件转换文件的顶部增加 `@pipe` 的注释。
+
+```js
+// @pipe
+const { a } = test;
+```
+
+最后，该插件已经在笔者负责的几个线上环境页面上验证过了，欢迎尝鲜使用。如果你觉得好用，欢迎 star :)
+
+参考文档：
+
+1. [babel-handbook](https://github.com/jamiebuilds/babel-handbook)
