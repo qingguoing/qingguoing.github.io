@@ -55,6 +55,7 @@ const { num = 0 |> filterA } = test;
 出此之外，支持过滤函数的串联调用执行：
 
 ```js
+// 当前仅支持 minimal proposal 方式。
 const { num = 0 |> filterA |> filterB |> filterC } = test;
 ```
 
