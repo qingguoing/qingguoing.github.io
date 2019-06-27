@@ -1,3 +1,14 @@
+---
+title: 自动处理对象结构中 null 字段的 babel 插件
+date: 2019-06-27 22:35:07
+tags: ["babel-plugin"]
+category: Babel
+---
+
+babel-plugin-pipe
+
+<!--more-->
+
 ### 背景
 
 日常撸码过程中，我们不免会遇到类似这种报错，`Uncaught TypeError: Cannot read property 'a' of null`，而出错的原因很明确，我们错误地从某个值为 `null` 或者 `undefined` 的变量读取属性 `a`。数据的来源也多重多样，例如无意中声明的变量，或者接口返回的字段。
@@ -29,8 +40,7 @@ const { a } = test || {};
 
 插件虽然解决了从 `null` 或者 `undefined` 上取值的问题，但对于`叶子节点`为 `null` 的情况却无法优化。稍有不慎，可能出现下面这种低级错误：
 
-
-![](https://user-gold-cdn.xitu.io/2019/6/27/16b9963ca1d41364?w=385&h=191&f=jpeg&s=9524)
+![null image](./null.jpeg)
 
 ### @babel/plugin-proposal-pipeline-operator
 
