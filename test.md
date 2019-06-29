@@ -79,6 +79,6 @@ const { a } = test;
 
 参考资料：
 
-1. [AST AST Explorer](https://astexplorer.net/)
+1. [AST Explorer](https://astexplorer.net/)
 2. [babel-handbook](https://github.com/jamiebuilds/babel-handbook)
 3. [@babel/plugin-proposal-pipeline-operator](https://babeljs.io/docs/en/babel-plugin-proposal-pipeline-operator)
