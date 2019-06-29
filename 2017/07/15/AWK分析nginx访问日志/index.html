@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>AWK分析nginx访问日志 | QINGGUOING</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="如题，记录一次 awk 应用。通过分析 nginx 访问日志，得出 pv、uv等数据。">
+<meta name="keywords" content="awk">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AWK分析nginx访问日志">
+<meta property="og:url" content="https://qingguoing.com/2017/07/15/AWK分析nginx访问日志/index.html">
+<meta property="og:site_name" content="QINGGUOING">
+<meta property="og:description" content="如题，记录一次 awk 应用。通过分析 nginx 访问日志，得出 pv、uv等数据。">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://ws1.sinaimg.cn/large/cab372d4ly1fjmenvh1p1j20fb0f0t95.jpg">
+<meta property="og:updated_time" content="2019-06-29T15:01:39.330Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="AWK分析nginx访问日志">
+<meta name="twitter:description" content="如题，记录一次 awk 应用。通过分析 nginx 访问日志，得出 pv、uv等数据。">
+<meta name="twitter:image" content="https://ws1.sinaimg.cn/large/cab372d4ly1fjmenvh1p1j20fb0f0t95.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="QINGGUOING" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">QINGGUOING</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://qingguoing.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-AWK分析nginx访问日志" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/07/15/AWK分析nginx访问日志/" class="article-date">
+  <time datetime="2017-07-15T15:06:17.000Z" itemprop="datePublished">2017-07-15</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      AWK分析nginx访问日志
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>如题，记录一次 awk 应用。通过分析 nginx 访问日志，得出 pv、uv等数据。</p>
+<a id="more"></a>
+<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>前段时间被要求通过分析 nginx 的访问日志得出项目的 pv、uv 和来源设备等占比。主要是该平台下面有多个 h5 子项目，每个子项目又是一个简单的 SPA 应用，所以就没有考虑到第三方统计平台。不过这个完成了好久，现在才写，主要还是个人懒癌发作。。</p>
+<h3 id="AWK"><a href="#AWK" class="headerlink" title="AWK"></a>AWK</h3><p>首先介绍下 AWK 吧。</p>
+<p>AWK 是一种 linux/unix 下的编程语言，强大的文本语言处理工具。它仅仅需要几行代码就能够完成复杂的文本处理工作。AWK 模式如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk <span class="string">'BEGIN&#123; commands &#125; pattern&#123; commands &#125; END&#123; commands &#125;'</span></span><br></pre></td></tr></table></figure>
+<p>网上找到一张对应的流程图如下：</p>
+<p><img src="https://ws1.sinaimg.cn/large/cab372d4ly1fjmenvh1p1j20fb0f0t95.jpg" alt="awk 流程图"></p>
+<p>BEGIN语句块在awk开始从输入流中读取行之前被执行，这是一个可选的语句块，比如变量初始化、打印输出表格的表头等语句通常可以写在BEGIN语句块中。</p>
+<p>END语句块在awk从输入流中读取完所有的行之后即被执行，比如打印所有行的分析结果这类信息汇总都是在END语句块中完成，它也是一个可选语句块。</p>
+<p>pattern语句块中的通用命令是最重要的部分，它也是可选的。如果没有提供pattern语句块，则默认执行 { print }，即打印每一个读取到的行，awk读取的每一行都会执行该语句块。</p>
+<h3 id="基本语法"><a href="#基本语法" class="headerlink" title="基本语法"></a>基本语法</h3><p>AWK 的基本语法可参考 <a href="http://man.linuxde.net/awk" target="_blank" rel="noopener">linux命令大全</a>。</p>
+<h3 id="处理-nginx-日志"><a href="#处理-nginx-日志" class="headerlink" title="处理 nginx 日志"></a>处理 nginx 日志</h3><p>默认的 nginx 日志输出少了些我们需要的部分，所以我们需要先处理 nginx.conf 配置，打出我们需要的日志。这里先说下信息的统计思路吧。PV 很简单，每条 html 的访问记录算一条 PV，每个时间段的 PV 通过 nginx 日志里面的访问时间来判断，每天的 PV 通过将 nginx 日志切割，即每天的访问日志放到每天对应的文件里来判断。而 UV 则通过 cookie 来鉴别，即首先通过 javascript 在客户端种一个唯一的 cookie，每次访问记录中没有携带 cookie 的访问算一次 UV，客户端 cookie 的有效期到每天的0点。而来源及访问设备等可以通过浏览器携带的信息来判断。</p>
+<h3 id="nginx-配置"><a href="#nginx-配置" class="headerlink" title="nginx 配置"></a>nginx 配置</h3><p>我们采取的部分 nginx.conf 配置如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">    include       mime.types;</span><br><span class="line">    default_type  application/octet-stream;</span><br><span class="line">    <span class="comment">// 定义一种 project_log 格式的日志模式</span></span><br><span class="line">    log_format project_log <span class="string">'$remote_addr - $time_local "$request" $status $sent_http_content_type UV: "$guid" $http_user_agent'</span>;</span><br><span class="line">    sendfile        on;</span><br><span class="line">    keepalive_timeout  <span class="number">65</span>;</span><br><span class="line">    client_max_body_size <span class="number">2</span>m;</span><br><span class="line">    fastcgi_intercept_errors on;</span><br><span class="line">    server &#123;</span><br><span class="line">	listen <span class="number">443</span>;</span><br><span class="line">	server_name localhost;</span><br><span class="line">	ssl on;</span><br><span class="line">        ssl_certificate /test/server.crt;</span><br><span class="line">	ssl_certificate_key /test/server.key;</span><br><span class="line">    <span class="comment">// 通过 cookie 正则匹配，如果有 _qingguoing 形式的 cookie 记录，就打到 log 中，默认是空</span></span><br><span class="line">	<span class="keyword">if</span> ($http_cookie ~* <span class="string">"_qingguoing=([A-Z0-9\.]*)"</span> ) &#123;</span><br><span class="line">		<span class="keyword">set</span> $guid $1;</span><br><span class="line">	&#125;</span><br><span class="line">	if ( $request_method !~ GET|POST|HEAD|DELETE|PUT ) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">403</span>;</span><br><span class="line">        &#125;</span><br><span class="line">	location /qingguoing/ &#123;</span><br><span class="line">            index index.html index.htm;</span><br><span class="line">            error_page <span class="number">404</span> ./<span class="number">404.</span>html;</span><br><span class="line">            <span class="comment">// 日志输出到 logs/qingguoing.log 文件</span></span><br><span class="line">	        access_log logs/qingguoing.log project_log;</span><br><span class="line">            <span class="keyword">if</span> (!-e $request_filename)&#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="number">404</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        error_page  <span class="number">404</span>              /<span class="number">404.</span>html;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="string">``</span><span class="string">` </span></span><br><span class="line"><span class="string">### nginx 日志切割脚本</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">`</span><span class="string">``</span>bash</span><br><span class="line">#nginx 日志切割脚本</span><br><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"># 设置日志文件存放目录</span><br><span class="line">logs_path=<span class="string">"/var/www/logs/"</span>;</span><br><span class="line">#设置pid文件</span><br><span class="line">pid_path=<span class="string">"/var/www/logs/nginx.pid"</span>;</span><br><span class="line">#重命名日志文件</span><br><span class="line">mv $&#123;logs_path&#125;qingguoing.log $&#123;logs_path&#125;logs_daily/qingguoing_$(date -d <span class="string">"yesterday"</span> +<span class="string">"%Y%m%d"</span>).log</span><br><span class="line">#向ngin主进程发信号重新打开日志</span><br><span class="line">kill -USR1 <span class="string">`cat <span class="subst">$&#123;pid_path&#125;</span>`</span></span><br></pre></td></tr></table></figure>
+<h3 id="AWK-处理脚本"><a href="#AWK-处理脚本" class="headerlink" title="AWK 处理脚本"></a>AWK 处理脚本</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><span class="line">BEGIN &#123;</span><br><span class="line">&#125;</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment"># 过滤错误请求，只处理 html 200 请求，因为 html 没设缓存</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$8</span> != 200) next;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$9</span> == <span class="string">"text/html"</span>) &#123;</span><br><span class="line">        <span class="comment"># 来源匹配</span></span><br><span class="line">        fromIndex = index(<span class="variable">$6</span>, <span class="string">"from="</span>);</span><br><span class="line">        endIndex = index(<span class="variable">$6</span>, <span class="string">"&amp;"</span>);</span><br><span class="line">        <span class="keyword">if</span> (fromIndex != 0 &amp;&amp; endIndex == 0) &#123;</span><br><span class="line">            <span class="comment"># 增加 from= 的长度</span></span><br><span class="line">            origin = substr(<span class="variable">$6</span>, fromIndex + 5);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            origin = substr(<span class="variable">$6</span>, fromIndex + 5, endIndex);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment"># pathname 匹配</span></span><br><span class="line">        pathLength = split(<span class="variable">$6</span>, path, <span class="string">"/"</span>);</span><br><span class="line">        <span class="comment"># uv标记</span></span><br><span class="line">        uv = 0;</span><br><span class="line">        project = path[3];</span><br><span class="line">        <span class="comment"># 404.html</span></span><br><span class="line">        <span class="keyword">if</span> (pathLength &gt; 4 || project == <span class="string">"404.html"</span>) next;</span><br><span class="line">        <span class="keyword">if</span> (origin != <span class="string">"platform"</span>) &#123;</span><br><span class="line">            <span class="comment"># 日期 时间</span></span><br><span class="line">            split(<span class="variable">$3</span>, datetime, <span class="string">":"</span>);</span><br><span class="line">            <span class="keyword">if</span> (timeArr[project] &amp;&amp; timeArr[project] != datetime[2]) &#123;</span><br><span class="line">                <span class="comment"># 新的一条记录，数据存到 mongodb 中并清空</span></span><br><span class="line">                system(<span class="string">"mongo 'yshow' --eval 'var project=\""</span>project<span class="string">"\", date=\""</span>dateArr[project]<span class="string">"\", time=\""</span>timeArr[project]<span class="string">"\", pv=\""</span>pvArr[project]<span class="string">"\", uv=\""</span>uvArr[project]<span class="string">"\", pvFromOther=\""</span>pvFromOtherArr[project]<span class="string">"\", pvFromTimeline=\""</span>pvFromTimelineArr[project]<span class="string">"\", pvFromGroupmsg=\""</span>pvFromGroupmsgArr[project]<span class="string">"\", pvFromSinglemsg=\""</span>pvFromSinglemsgArr[project]<span class="string">"\",  uvFromOther=\""</span>uvFromOtherArr[project]<span class="string">"\", uvFromTimeline=\""</span>uvFromTimelineArr[project]<span class="string">"\", uvFromGroupmsg=\""</span>uvFromGroupmsgArr[project]<span class="string">"\", uvFromSinglemsg=\""</span>uvFromSinglemsgArr[project]<span class="string">"\", pvIos=\""</span>pvIosArr[project]<span class="string">"\", uvIos=\""</span>uvIosArr[project]<span class="string">"\", pvAdr=\""</span>pvAdrArr[project]<span class="string">"\", uvAdr=\""</span>uvAdrArr[project]<span class="string">"\", pvDeviceOther=\""</span>pvDeviceOtherArr[project]<span class="string">"\", uvDeviceOther=\""</span>uvDeviceOtherArr[project]<span class="string">"\"' ./logs_mongo_insert.js"</span>);</span><br><span class="line">                delete dateArr[project];</span><br><span class="line">                delete timeArr[project];</span><br><span class="line">                delete pvArr[project];</span><br><span class="line">                delete uvArr[project];</span><br><span class="line">                delete pvFromOtherArr[project];</span><br><span class="line">                delete pvFromTimelineArr[project];</span><br><span class="line">                delete pvFromGroupmsgArr[project];</span><br><span class="line">                delete pvFromSinglemsgArr[project];</span><br><span class="line">                delete uvFromOtherArr[project];</span><br><span class="line">                delete uvFromTimelineArr[project];</span><br><span class="line">                delete uvFromGroupmsgArr[project];</span><br><span class="line">                delete uvFromSinglemsgArr[project];</span><br><span class="line">                delete pvIosArr[project];</span><br><span class="line">                delete uvIosArr[project];</span><br><span class="line">                delete pvAdrArr[project];</span><br><span class="line">                delete uvAdrArr[project];</span><br><span class="line">                delete pvDeviceOtherArr[project];</span><br><span class="line">                delete uvDeviceOtherArr[project];</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment"># save</span></span><br><span class="line">            timeArr[project] = datetime[2];</span><br><span class="line">            dateArr[project] = datetime[1];</span><br><span class="line">            pvArr[project]++;</span><br><span class="line">            <span class="keyword">if</span> (<span class="variable">$11</span> == <span class="string">"\"\""</span>) &#123;</span><br><span class="line">                uvArr[project]++;</span><br><span class="line">                uv = 1;</span><br><span class="line">            &#125;</span><br><span class="line">            ios = index(<span class="variable">$0</span>, <span class="string">"iPhone"</span>);</span><br><span class="line">            adr = index(<span class="variable">$0</span>, <span class="string">"Android"</span>);</span><br><span class="line">            <span class="comment"># 设备</span></span><br><span class="line">            <span class="keyword">if</span> (ios &gt; 0) &#123;</span><br><span class="line">                <span class="keyword">if</span> (uv) uvIosArr[project]++;</span><br><span class="line">                pvIosArr[project]++;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (adr &gt; 0) &#123;</span><br><span class="line">                <span class="keyword">if</span> (uv) uvAdrArr[project]++;</span><br><span class="line">                pvAdrArr[project]++;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (uv) uvDeviceOtherArr[project]++;</span><br><span class="line">                pvDeviceOtherArr[project]++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment"># 其他</span></span><br><span class="line">            <span class="keyword">if</span> (fromIndex == 0 ) &#123;</span><br><span class="line">                <span class="keyword">if</span> (uv) uvFromOtherArr[project]++;</span><br><span class="line">                pvFromOtherArr[project]++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment"># 微信朋友圈</span></span><br><span class="line">            <span class="keyword">if</span> (origin == <span class="string">"timeline"</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (uv) uvFromTimelineArr[project]++;</span><br><span class="line">                pvFromTimelineArr[project]++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment"># 微信群</span></span><br><span class="line">            <span class="keyword">if</span> (origin == <span class="string">"groupmessage"</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (uv) uvFromGroupmsgArr[project]++;</span><br><span class="line">                pvFromGroupmsgArr[project]++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment"># 好友分享</span></span><br><span class="line">            <span class="keyword">if</span> (origin == <span class="string">"singlemessage"</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (uv) uvFromSinglemsgArr[project]++;</span><br><span class="line">                pvFromSinglemsgArr[project]++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line">END &#123;</span><br><span class="line">    <span class="keyword">for</span> (project <span class="keyword">in</span> pvArr) &#123;</span><br><span class="line">        system(<span class="string">"mongo 'yshow' --eval 'var project=\""</span>project<span class="string">"\", date=\""</span>dateArr[project]<span class="string">"\", time=\""</span>timeArr[project]<span class="string">"\", pv=\""</span>pvArr[project]<span class="string">"\", uv=\""</span>uvArr[project]<span class="string">"\", pvFromOther=\""</span>pvFromOtherArr[project]<span class="string">"\", pvFromTimeline=\""</span>pvFromTimelineArr[project]<span class="string">"\", pvFromGroupmsg=\""</span>pvFromGroupmsgArr[project]<span class="string">"\", pvFromSinglemsg=\""</span>pvFromSinglemsgArr[project]<span class="string">"\",  uvFromOther=\""</span>uvFromOtherArr[project]<span class="string">"\", uvFromTimeline=\""</span>uvFromTimelineArr[project]<span class="string">"\", uvFromGroupmsg=\""</span>uvFromGroupmsgArr[project]<span class="string">"\", uvFromSinglemsg=\""</span>uvFromSinglemsgArr[project]<span class="string">"\", pvIos=\""</span>pvIosArr[project]<span class="string">"\", uvIos=\""</span>uvIosArr[project]<span class="string">"\", pvAdr=\""</span>pvAdrArr[project]<span class="string">"\", uvAdr=\""</span>uvAdrArr[project]<span class="string">"\", pvDeviceOther=\""</span>pvDeviceOtherArr[project]<span class="string">"\", uvDeviceOther=\""</span>uvDeviceOtherArr[project]<span class="string">"\"' ./logs_mongo_insert.js"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>至此基本逻辑已写完。只需要在服务器里设置定时任务就行，例如每天的0点切割nginx日志，0点30开始处理前一天的日志存储统计信息。所以当前该思路唯一也是最大的缺陷就是没办法获取实时访问记录。后续如果有新思路会及时补充。</p>
+<p>至此基本逻辑已写完。只需要在服务器里设置定时任务就行，例如每天的0点切割nginx日志，0点30开始处理前一天的日志存储统计信息。所以当前该思路唯一也是最大的缺陷就是没办法获取实时访问记录。</p>
+<h3 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h3><p>前面也说了，最近才写这篇文章的主要原因是懒癌，导火索是前两天想通过 AWK 处理一个 hosts 文件到 charles 的 DNS 记录里，居然忘了 AWK 该怎么写了，果然好记性不如烂笔头。</p>
+<p>本文代码地址：<a href="https://github.com/qingguoing/test/tree/master/awk/nginx" target="_blank" rel="noopener">https://github.com/qingguoing/test/tree/master/awk/nginx</a></p>
+<p>hosts 文件转 charles DNS 记录文件：<a href="https://github.com/qingguoing/test/tree/master/awk/DNS" target="_blank" rel="noopener">https://github.com/qingguoing/test/tree/master/awk/DNS</a></p>
+<p>本文参考内容：</p>
+<ol>
+<li>nginx日志切割: <a href="http://www.nginx.cn/255.html" target="_blank" rel="noopener">http://www.nginx.cn/255.html</a></li>
+<li>linux命令大全: <a href="http://man.linuxde.net/awk" target="_blank" rel="noopener">http://man.linuxde.net/awk</a></li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://qingguoing.com/2017/07/15/AWK分析nginx访问日志/" data-id="cjxhnmil1002mjp8c3vhdunmx" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/awk/">awk</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/08/21/何为虚拟-DOM-1/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          何为虚拟 DOM (1)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/04/21/H5-History-API/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">H5 History API</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Babel/">Babel</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Diary/">Diary</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/HTTP/">HTTP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/JavaScript/">JavaScript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/React/">React</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术论坛/">技术论坛</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Async/">Async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/D2/">D2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ES6/">ES6</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EventLoop/">EventLoop</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Flux/">Flux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/H5/">H5</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JS-异步处理系列/">JS 异步处理系列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node/">Node</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Promise/">Promise</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redux/">Redux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vue/">Vue</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/awk/">awk</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel-plugin/">babel-plugin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/koa/">koa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/learning/">learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/生活随笔/">生活随笔</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/自动化测试/">自动化测试</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Async/" style="font-size: 10px;">Async</a> <a href="/tags/D2/" style="font-size: 10px;">D2</a> <a href="/tags/ES6/" style="font-size: 16.67px;">ES6</a> <a href="/tags/EventLoop/" style="font-size: 13.33px;">EventLoop</a> <a href="/tags/Flux/" style="font-size: 13.33px;">Flux</a> <a href="/tags/H5/" style="font-size: 10px;">H5</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/JS-异步处理系列/" style="font-size: 20px;">JS 异步处理系列</a> <a href="/tags/Node/" style="font-size: 10px;">Node</a> <a href="/tags/Performance/" style="font-size: 10px;">Performance</a> <a href="/tags/Promise/" style="font-size: 10px;">Promise</a> <a href="/tags/Redux/" style="font-size: 10px;">Redux</a> <a href="/tags/Vue/" style="font-size: 10px;">Vue</a> <a href="/tags/awk/" style="font-size: 10px;">awk</a> <a href="/tags/babel-plugin/" style="font-size: 10px;">babel-plugin</a> <a href="/tags/koa/" style="font-size: 13.33px;">koa</a> <a href="/tags/learning/" style="font-size: 10px;">learning</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/vscode/" style="font-size: 10px;">vscode</a> <a href="/tags/生活随笔/" style="font-size: 10px;">生活随笔</a> <a href="/tags/自动化测试/" style="font-size: 10px;">自动化测试</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">April 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/06/27/自动处理对象结构中-null-字段的-babel-插件/">自动处理对象结构中 null 字段的 babel 插件</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/26/如何编写好一个测试用例/">如何编写好一个测试用例</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/20/JS-异步处理系列（四）-async-await/">JS 异步处理系列（四）- async &amp; await</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/19/JS-异步处理系列（三）-Promise/">JS 异步处理系列（三）- Promise</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/14/JS-异步处理系列（二）-Node-Event-Loop/">JS 异步处理系列（二）- Node Event Loop</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 qingguoing<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

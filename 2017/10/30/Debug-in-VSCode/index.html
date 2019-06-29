@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>Debug in VSCode | QINGGUOING</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="vscode 中的 debugger 功能介绍，主要是前端开发日常中的 debug 需求和调试 Node 中尚未完全支持的 EcmaScript 语法。">
+<meta name="keywords" content="vscode,tools">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Debug in VSCode">
+<meta property="og:url" content="https://qingguoing.com/2017/10/30/Debug-in-VSCode/index.html">
+<meta property="og:site_name" content="QINGGUOING">
+<meta property="og:description" content="vscode 中的 debugger 功能介绍，主要是前端开发日常中的 debug 需求和调试 Node 中尚未完全支持的 EcmaScript 语法。">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://ws1.sinaimg.cn/large/cab372d4ly1fl42mlyrovj20lo04xwet.jpg">
+<meta property="og:updated_time" content="2019-06-29T15:01:39.330Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Debug in VSCode">
+<meta name="twitter:description" content="vscode 中的 debugger 功能介绍，主要是前端开发日常中的 debug 需求和调试 Node 中尚未完全支持的 EcmaScript 语法。">
+<meta name="twitter:image" content="https://ws1.sinaimg.cn/large/cab372d4ly1fl42mlyrovj20lo04xwet.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="QINGGUOING" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">QINGGUOING</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://qingguoing.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Debug-in-VSCode" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/10/30/Debug-in-VSCode/" class="article-date">
+  <time datetime="2017-10-30T07:43:29.000Z" itemprop="datePublished">2017-10-30</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Tools/">Tools</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Debug in VSCode
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>vscode 中的 debugger 功能介绍，主要是前端开发日常中的 debug 需求和调试 Node 中尚未完全支持的 EcmaScript 语法。</p>
+<a id="more"></a>
+<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>最近想用 vscode 中的 debug 代码工具跟踪 ES6/ES7 的代码，发现随着 vscode 和 node 的版本不断迭代，社区中已有的 debug 介绍和配置已经不能满足当前使用，私下就随便折腾了下，折腾经验记录写下。折腾环境：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">os: macOS 10.12.6</span><br><span class="line">vscode: 1.17.2</span><br><span class="line">node: v8.7.0</span><br></pre></td></tr></table></figure>
+<h3 id="基本的-Debugger"><a href="#基本的-Debugger" class="headerlink" title="基本的 Debugger"></a>基本的 Debugger</h3><p>vscode 默认会采用内置的 node debug 环境，走当前项目下 package.json 文件里的 main 字段对应的 js 文件。然后点击左侧的 Debug 按钮，再点击头部的运行按钮，选择 Node.js 环境即可。文件内部即支持手写 debugger 关键字，也通过在具体的行号左边区域点击左键直接增加一个红点或者点击右键增加一个满足特定条件才会执行到 debug 的方式来增加断点。而通过鼠标点击增加的断点都可以在 vscode debug 左侧区域的 BREAKPOINTS 面板查看到。</p>
+<p>点击运行按钮或者 F5 按键进入运行调试过程，顶部会出现类似几个 chrome devtools 的 debug 按钮，左侧区域可以查看到 VARIABLES 和 CALL STACK 等面板。</p>
+<p><img src="https://ws1.sinaimg.cn/large/cab372d4ly1fl42mlyrovj20lo04xwet.jpg" alt="vscode debugger"></p>
+<p>另外，对于除 js 以外的其它语言的 debug 调试，需要安装对应的 debug 插件，这个在 extensions 的搜索栏搜索 debug，然后选择自己需要的安装即可。</p>
+<h3 id="Node-js-Debugger"><a href="#Node-js-Debugger" class="headerlink" title="Node.js Debugger"></a>Node.js Debugger</h3><p>除了基本的 debugger，vscode 还支持配置多种形式的调试，Debug 面板顶部存在一个设置按钮，点击即可进入设置文件 luanch.json。每次点击绿色的 Start debugging 按钮之前，可在右侧选择已经设置好的其他形式。设置文件的格式如下，直接在 configurations 字段里新增对应的配置对象即可。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"version"</span>: <span class="string">"0.2.0"</span>,</span><br><span class="line">    <span class="attr">"configurations"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"node"</span>,</span><br><span class="line">            <span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">            <span class="attr">"name"</span>: <span class="string">"Launch Program"</span>,</span><br><span class="line">            <span class="attr">"program"</span>: <span class="string">"$&#123;workspaceFolder&#125;/app.js"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"compounds"</span>: []</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>node 类型 Debugger 支持 launch 和 attach 两种调试形式。下面简单介绍下各自相应的配置。</p>
+<h4 id="launch"><a href="#launch" class="headerlink" title="launch"></a>launch</h4><p>launch 形式的调试是通过 vscode 直接运行并调试文件。上文中基本的 Debugger 默认走的也是 launch 形式。下面是直接调试当前工作目录下的 app.js 的配置，其中 ${workspaceFolder} 是当前包含 package.json 的工作目录。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"type"</span>: <span class="string">"node"</span>,</span><br><span class="line">    <span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">    <span class="attr">"name"</span>: <span class="string">"Launch Program"</span>,</span><br><span class="line">    <span class="attr">"program"</span>: <span class="string">"$&#123;workspaceFolder&#125;/app.js"</span></span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>另外一种 launch 形式的调试模式是通过 npm run debug 直接走 package.json 文件里配置的 debug 脚本。</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"type"</span>: <span class="string">"node"</span>,</span><br><span class="line">    <span class="attr">"request"</span>: <span class="string">"launch"</span>,</span><br><span class="line">    <span class="attr">"name"</span>: <span class="string">"Launch via NPM"</span>,</span><br><span class="line">    <span class="attr">"runtimeExecutable"</span>: <span class="string">"npm"</span>,</span><br><span class="line">    <span class="attr">"runtimeArgs"</span>: [</span><br><span class="line">        <span class="string">"run-script"</span>,</span><br><span class="line">        <span class="string">"debug"</span></span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"port"</span>: <span class="number">9229</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们的 debug 脚本形式为，两边指定一致的调试端口。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;debug&quot;: &quot;node --inspect-brk=9229 web.js&quot;</span><br></pre></td></tr></table></figure>
+<h4 id="attach"><a href="#attach" class="headerlink" title="attach"></a>attach</h4><p>attach 形式的调试原理是通过 ip 地址、端口和协议来调试一个手动跑起的 node 文件。首先我们需要再 .vscode/launch.json 加上如下配置：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"type"</span>: <span class="string">"node"</span>,</span><br><span class="line">    <span class="attr">"request"</span>: <span class="string">"attach"</span>,</span><br><span class="line">    <span class="attr">"name"</span>: <span class="string">"Attach"</span>,</span><br><span class="line">    <span class="attr">"port"</span>: <span class="number">9229</span>,</span><br><span class="line">    <span class="attr">"protocol"</span>: <span class="string">"inspector"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后点击运行按钮 debug 的运行按钮，最后在 10s 内启动一个简单的 node 脚本，前提是我们已经在 test.js 代码每一行的左侧加了断点。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">node --inspect test.js</span><br><span class="line">// test.js 的内容</span><br><span class="line">console.log(111);</span><br><span class="line">console.log(222);</span><br><span class="line">console.log(333);</span><br></pre></td></tr></table></figure>
+<p>如果此时发现不能一步步跟着断点调试，需要通过如下方式运行 test.js。–inspect-brk 会停留在即将运行 node 文件的第一行代码处。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">node --inspect-brk test.js</span><br></pre></td></tr></table></figure>
+<p>通过上面的介绍，发现可以通过这种方式来一步步调试 node 里面尚未支持的 ES6/ES7 语法。</p>
+<h3 id="ES6-ES7-debug"><a href="#ES6-ES7-debug" class="headerlink" title="ES6/ES7 debug"></a>ES6/ES7 debug</h3><p>下面是 mobx 官方文档的一个简单 demo，在对应的装饰器语句加上断点，甚至可以在 node_modules 中 mobx 对应的文件内加上断点。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; observable, computed &#125; <span class="keyword">from</span> <span class="string">"mobx"</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">OrderLine</span> </span>&#123;</span><br><span class="line">    @observable price = <span class="number">0</span>;</span><br><span class="line">    @observable amount = <span class="number">1</span>;</span><br><span class="line">    @computed <span class="keyword">get</span> total() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.price * <span class="keyword">this</span>.amount;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> line = <span class="keyword">new</span> OrderLine();</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">"price"</span> <span class="keyword">in</span> line); <span class="comment">// true</span></span><br><span class="line"><span class="built_in">console</span>.log(line.hasOwnProperty(<span class="string">"price"</span>)); <span class="comment">// false，price 属性是定义在类上的，尽管值会被存储在每个实例上。</span></span><br><span class="line">line.amount = <span class="number">43</span>;</span><br><span class="line"><span class="built_in">console</span>.log(line.hasOwnProperty(<span class="string">"price"</span>)); <span class="comment">// true, 现在所有的属性都定义在实例上了。</span></span><br></pre></td></tr></table></figure>
+<p>vscode 的 launch.json 里面的配置我们采用的还是上面中 attach 的配置。接下来需要引入 babel-cli，并且配置对应的 .babelrc 文件，以便可以直接运行当前 node 版本尚未支持的装饰器语法。最后通过如下命令运行上面的 demo 即可。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">babel-node --inspect src/index.js</span><br></pre></td></tr></table></figure>
+<h3 id="其它插件"><a href="#其它插件" class="headerlink" title="其它插件"></a>其它插件</h3><p>vscode 除了上面内置的 node debugger 插件，还有很多其他类型的调试插件，下面简单说下其中的 debugger for chrome 和 react-native tools 两个插件。</p>
+<p>每种类型的调试的 request 都分为 launch 和 attach 两种方式。对于两种插件的使用，详情可参考上面文档链接查看。而针对浏览器端的 js 调试，还是建议直接使用 Chrome dev tools 自带的 source 调试工具，毕竟这个不需要设置相应的配置文件，同时大家也最熟悉。对于 server 端的调试，推荐采用上文中 Node.js Debugger 部分介绍的方式。</p>
+<p>参考链接：</p>
+<ol>
+<li><a href="https://code.visualstudio.com/docs/nodejs/nodejs-debugging" target="_blank" rel="noopener">https://code.visualstudio.com/docs/nodejs/nodejs-debugging</a></li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://qingguoing.com/2017/10/30/Debug-in-VSCode/" data-id="cjxhnmijy0005jp8cu4skutx8" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/tools/">tools</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vscode/">vscode</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/01/21/Python3-学习笔记-1/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Python 3 学习笔记（1）
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/10/17/Flux架构系列-2/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Flux架构系列(2)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Babel/">Babel</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Diary/">Diary</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/HTTP/">HTTP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/JavaScript/">JavaScript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/React/">React</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术论坛/">技术论坛</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Async/">Async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/D2/">D2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ES6/">ES6</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EventLoop/">EventLoop</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Flux/">Flux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/H5/">H5</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JS-异步处理系列/">JS 异步处理系列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node/">Node</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Promise/">Promise</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redux/">Redux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vue/">Vue</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/awk/">awk</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel-plugin/">babel-plugin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/koa/">koa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/learning/">learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/生活随笔/">生活随笔</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/自动化测试/">自动化测试</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Async/" style="font-size: 10px;">Async</a> <a href="/tags/D2/" style="font-size: 10px;">D2</a> <a href="/tags/ES6/" style="font-size: 16.67px;">ES6</a> <a href="/tags/EventLoop/" style="font-size: 13.33px;">EventLoop</a> <a href="/tags/Flux/" style="font-size: 13.33px;">Flux</a> <a href="/tags/H5/" style="font-size: 10px;">H5</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/JS-异步处理系列/" style="font-size: 20px;">JS 异步处理系列</a> <a href="/tags/Node/" style="font-size: 10px;">Node</a> <a href="/tags/Performance/" style="font-size: 10px;">Performance</a> <a href="/tags/Promise/" style="font-size: 10px;">Promise</a> <a href="/tags/Redux/" style="font-size: 10px;">Redux</a> <a href="/tags/Vue/" style="font-size: 10px;">Vue</a> <a href="/tags/awk/" style="font-size: 10px;">awk</a> <a href="/tags/babel-plugin/" style="font-size: 10px;">babel-plugin</a> <a href="/tags/koa/" style="font-size: 13.33px;">koa</a> <a href="/tags/learning/" style="font-size: 10px;">learning</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/vscode/" style="font-size: 10px;">vscode</a> <a href="/tags/生活随笔/" style="font-size: 10px;">生活随笔</a> <a href="/tags/自动化测试/" style="font-size: 10px;">自动化测试</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">April 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/06/27/自动处理对象结构中-null-字段的-babel-插件/">自动处理对象结构中 null 字段的 babel 插件</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/26/如何编写好一个测试用例/">如何编写好一个测试用例</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/20/JS-异步处理系列（四）-async-await/">JS 异步处理系列（四）- async &amp; await</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/19/JS-异步处理系列（三）-Promise/">JS 异步处理系列（三）- Promise</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/14/JS-异步处理系列（二）-Node-Event-Loop/">JS 异步处理系列（二）- Node Event Loop</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 qingguoing<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>ES6 学习笔记(1) | QINGGUOING</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本文是在 《ES6标准入门》(第二版) 之后的精简知识点，主要是学完之后的学习笔记。相对于原书主要在于精简。不过还是希望大家支持原作者，购买正版书籍。本人是购买的 kindle 版本。 本篇文章主要讲述 let，const，解构赋值，字符串、正则、数值、数组、函数和对象的扩展以及 Symbol，Proxy 和 Reflect。">
+<meta name="keywords" content="ES6">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ES6 学习笔记(1)">
+<meta property="og:url" content="https://qingguoing.com/2017/09/24/ES6-学习笔记-1/index.html">
+<meta property="og:site_name" content="QINGGUOING">
+<meta property="og:description" content="本文是在 《ES6标准入门》(第二版) 之后的精简知识点，主要是学完之后的学习笔记。相对于原书主要在于精简。不过还是希望大家支持原作者，购买正版书籍。本人是购买的 kindle 版本。 本篇文章主要讲述 let，const，解构赋值，字符串、正则、数值、数组、函数和对象的扩展以及 Symbol，Proxy 和 Reflect。">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-06-29T15:01:39.330Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ES6 学习笔记(1)">
+<meta name="twitter:description" content="本文是在 《ES6标准入门》(第二版) 之后的精简知识点，主要是学完之后的学习笔记。相对于原书主要在于精简。不过还是希望大家支持原作者，购买正版书籍。本人是购买的 kindle 版本。 本篇文章主要讲述 let，const，解构赋值，字符串、正则、数值、数组、函数和对象的扩展以及 Symbol，Proxy 和 Reflect。">
+  
+    <link rel="alternate" href="/atom.xml" title="QINGGUOING" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">QINGGUOING</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://qingguoing.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-ES6-学习笔记-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/24/ES6-学习笔记-1/" class="article-date">
+  <time datetime="2017-09-24T14:34:34.000Z" itemprop="datePublished">2017-09-24</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      ES6 学习笔记(1)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本文是在 《ES6标准入门》(第二版) 之后的精简知识点，主要是学完之后的学习笔记。相对于原书主要在于精简。不过还是希望大家支持原作者，购买正版书籍。本人是购买的 kindle 版本。</p>
+<p>本篇文章主要讲述 let，const，解构赋值，字符串、正则、数值、数组、函数和对象的扩展以及 Symbol，Proxy 和 Reflect。</p>
+<a id="more"></a>
+<h3 id="let-amp-const"><a href="#let-amp-const" class="headerlink" title="let &amp; const"></a>let &amp; const</h3><p>用于变量声明，相对于原有 var 的区别是：</p>
+<ol>
+<li>支持块级作用域。</li>
+<li>不存在变量提升。</li>
+<li>暂时性死区：在代码块内，使用 let 声明变量之前，该变量是不可用的。</li>
+<li>不允许重复声明。</li>
+<li>const 用来声明常量，保证变量名指向的地址不变，并不保证该地址的数据不变。</li>
+<li>var 和 function 声明的全局变量依旧是全局对象的属性，let、const 和 class 声明的全局变量不属于全局对象的属性。</li>
+</ol>
+<h3 id="变量的解构赋值"><a href="#变量的解构赋值" class="headerlink" title="变量的解构赋值"></a>变量的解构赋值</h3><p>ES6 允许按照一定的模式，从数组和对象中提取值，对变量进行赋值。内部使用严格相等运算符(===)判断一个位置是否有值。</p>
+<h3 id="数组"><a href="#数组" class="headerlink" title="数组"></a>数组</h3><p>两个变量互相交换值的语句：[b, a] = [a, b]。</p>
+<h3 id="对象"><a href="#对象" class="headerlink" title="对象"></a>对象</h3><p>下面语句中只声明了两个变量 c 和 d，其中 d 是默认值 0，a 和 b 均是模式匹配。而默认值如果是一个表达式，则这个表达式是惰性求值的，即只有在用到时才会求值。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> &#123;<span class="attr">a</span>: &#123; <span class="attr">b</span>: c, <span class="attr">d</span>: <span class="number">0</span> &#125; &#125; = &#123;a： &#123; <span class="attr">b</span>: <span class="number">3</span> &#125; &#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="字符串的扩展"><a href="#字符串的扩展" class="headerlink" title="字符串的扩展"></a>字符串的扩展</h3><ol>
+<li>includes(str[, startIndex]) 返回布尔值，表示是否找到了参数字符串。</li>
+<li>startsWith(str[, startIndex]) 返回布尔值，表示参数字符串是否在原字符串的头部。</li>
+<li>endsWith(str[, startIndex]) 返回布尔值，表示参数字符串是否在原字符串的尾部。</li>
+<li>repeat(n) 返回一个新字符串，表示将原字符串重复 n 次。<br>模板字符串<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">5. `String.raw()` 用来获取一个模板字符串的原始字面量值.</span><br><span class="line"></span><br><span class="line">#### 标签模板</span><br><span class="line"></span><br><span class="line">模板字符串形式可以紧跟在一个函数名后面，该函数将被调用来处理这个模板字符串。这被称为 &quot;标签模板&quot; 功能。是函数调用的一种特殊形式，紧跟在后面的模板字符串就是它的参数。</span><br><span class="line"></span><br><span class="line">```javascript</span><br><span class="line">const a = 5;</span><br><span class="line">const b = 10;</span><br><span class="line">tag`Hello $&#123;a + b&#125; world $&#123;a * b&#125;`</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>tag 函数第一个参数是一个数组，数组成员是模板字符串中那些没有变量替换的部分。上述代码中，模板字符串含有两个变量，因此 tag 会接收到 value1 和 value2 两个参数。tag 函数的参数值如下：</p>
+<ul>
+<li>第一个参数： [‘Hello’, ‘world’]</li>
+<li>第二个参数：15</li>
+<li>第三个参数：50</li>
+</ul>
+<p>可以用来处理用户输入的内容或者支持国际化。</p>
+<h3 id="ES7"><a href="#ES7" class="headerlink" title="ES7"></a>ES7</h3><p>padStart(len, str) 原字符串未达到指定长度 len，会在头部补全 str。<br>padEnd(len, str) 原字符串未达到指定长度 len，会在尾部补全 str。</p>
+<h3 id="正则的扩展"><a href="#正则的扩展" class="headerlink" title="正则的扩展"></a>正则的扩展</h3><ol>
+<li>允许 RegExp 函数接受正则表达式作为参数，此时会返回一个原有正则表达式的拷贝。第二个参数的修饰符会更新原有的修饰符。</li>
+<li><p>字符串对象中的 4 个可以使用正则表达式的方法：match、replace、search 和 split。ES6 将该4个方法在语言内部全部调用 RegExp 的实例方法，从而做到所有与正则相关的方法都定义在 RegExp 对象上。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">String</span>.prototype.match <span class="comment">// 调用 RegExp.prototype[Symbol.match]</span></span><br><span class="line"><span class="built_in">String</span>.prototype.replace <span class="comment">// 调用 RegExp.prototype[Symbol.replace]</span></span><br><span class="line"><span class="built_in">String</span>.prototype.search <span class="comment">// 调用 RegExp.prototype[Symbol.search]</span></span><br><span class="line"><span class="built_in">String</span>.prototype.split <span class="comment">// 调用 RegExp.prototype[Symbol.split]</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>u修饰符，定义为 ‘Unicode模式’，用来正确处理大于 \uFFFF 的 Unicode 字符。使用 u 修饰符后，所有量词都会正确识别码点大于 0xFFFF 的 Unicode 字符。</p>
+</li>
+<li><p>Unicode字符表示法：使用大括号表示 Unicode 字符的表示法，但在正则表达式中必须加上 u 修饰符才能识别。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/\u&#123;<span class="number">61</span>&#125;/.test(<span class="string">'a'</span>) <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>预定义模式：\S 匹配所有不是空格的字符。加了 u 修饰符，能正确匹配码点大于 0xFFFF 的 Unicode 字符。</p>
+</li>
+<li><p>y修饰符，与 g 类似，全局匹配，后一次匹配都从上一次匹配成功的下一个位置开始。不同之处在于，g 修饰符只要剩余位置存在匹配就行，而 y 修饰符会确保必须从剩余的第一个位置开始匹配。与 y 修饰符想匹配，正则对象多了 sticky 属性，表示是否设置了 y 修饰符。</p>
+</li>
+<li>ES6 新增了 flags 属性，返回正则表达式的修饰符。</li>
+</ol>
+<h3 id="数值的扩展"><a href="#数值的扩展" class="headerlink" title="数值的扩展"></a>数值的扩展</h3><ol>
+<li>支持二进制和八进制表示法，分别用前缀 0b(或0B) 和 0o（或0O）表示。</li>
+<li>Number.isFinite() 和 Number.isNaN()，只对数值有效，非数值一律返回false。</li>
+<li>Number.parseInt() 和 Number.parseFloat() 移到 Number 对象上。</li>
+<li>Number.isSafeInteger() 判断一个数是否在 -2^(53)（Number.MIN_SAFE_INTEGER 表示） 到 2^(53)（Number.MAX_SAFE_INTEGER 表示） 之间（不含两个端点）。</li>
+</ol>
+<h4 id="Math-对象的扩展"><a href="#Math-对象的扩展" class="headerlink" title="Math 对象的扩展"></a>Math 对象的扩展</h4><ol>
+<li>Math.trunc() 去除一个数的小数部分，返回整数部分。</li>
+<li>Math.hypot() 返回所有参数的平方和的平方根。Math.hypot(3, 4) //5</li>
+</ol>
+<h3 id="ES7-1"><a href="#ES7-1" class="headerlink" title="ES7"></a>ES7</h3><p>1.新增了一个指数运算符（）。<code>2 3 //8</code>。</p>
+<h3 id="数组的扩展"><a href="#数组的扩展" class="headerlink" title="数组的扩展"></a>数组的扩展</h3><ol>
+<li>Array.from() 将两类对象转为真正的数组：类似数组的对象和可遍历对象(包括新增的 Set 和 Map)。可选的第二个参数，类似数组的 map 方法，用来对每个元素进行处理，将处理后的值放入返回的数组。</li>
+<li>Array.of() 用于将一组值转换为数组。如果没有参数，就返回一个空数组。</li>
+<li><p>Array.prototype.copyWithin(target[, start, end]) 在当前数组内部将制定位置的成员复制到其他位置(会覆盖原有成员)，然后返回当前数组。参数均是数字。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">target: 从该位置开始替换数据</span><br><span class="line">start: 从该位置开始读取数据，默认为<span class="number">0</span>。负值表示倒数</span><br><span class="line">end: 从该位置前停止读取数据，默认等于数组长度。负值表示倒数。</span><br><span class="line"><span class="comment">// 从3号位置直到数组结束的成员复制到从0号位置开始的位置。</span></span><br><span class="line">[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>].copyWithin(<span class="number">0</span>, <span class="number">3</span>) <span class="comment">// [4, 5, 3, 4, 5]</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Array.prototype.find(fn) 与 Array.prototype.findIndex(fn) 找出第一个符合条件的数组成员(位置)。</p>
+</li>
+<li><p>Array.prototype.fill() 使用给定值填充数组。</p>
+</li>
+<li>数组实例的 entries()、keys() 和 values() 分别返回对键名、键值和键值对的遍历。</li>
+</ol>
+<h4 id="ES7-2"><a href="#ES7-2" class="headerlink" title="ES7"></a>ES7</h4><ol>
+<li>Array.prototype.includes(val[, start]) 返回一个布尔值，表示某个数组是否包含给定的值。</li>
+<li>数组推导<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> nums = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>];</span><br><span class="line">[<span class="keyword">for</span> (num <span class="keyword">of</span> nums) <span class="keyword">if</span> (num &gt; <span class="number">2</span>) num]; <span class="comment">// [3, 4]</span></span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h4 id="数组的空位"><a href="#数组的空位" class="headerlink" title="数组的空位"></a>数组的空位</h4><p>数组的空位指的某一个位置没有任何值。例如 Array 构造函数返回的数组都是空位。空位不是 undefined，一个位置的值等于 undefined 依然是有值的。0 in [, , ,] // false。Array.from、扩展运算符(…)、entries()、keys()、values()、find() 和 findIndex() 会将数组的空位转为 undefined。copyWithin 会连空位一起复制。fill 会将空位视为正常的数组位置。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[...[<span class="string">'a'</span>,,<span class="string">'b'</span>]] <span class="comment">// ['a', undefined, 'b']</span></span><br><span class="line">[, <span class="string">'a'</span>].find(<span class="function"><span class="params">x</span> =&gt;</span> <span class="literal">true</span>) <span class="comment">// undefined</span></span><br><span class="line">[, <span class="string">'a'</span>].findIndex(<span class="function"><span class="params">x</span> =&gt;</span> <span class="literal">true</span>) <span class="comment">// 0</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="函数的扩展"><a href="#函数的扩展" class="headerlink" title="函数的扩展"></a>函数的扩展</h3><ol>
+<li>参数的默认值 function test({x, y} = { x: 0, y: 0 })。</li>
+<li>指定了默认值以后，函数的 length 属性将返回没有指定默认值的参数个数。因为 length 的含义是，该函数预期传入的参数个数。同理，rest 参数也不会计入 length 属性。</li>
+<li><p>如果参数默认值是一个变量，则该变量所处的作用域与其他变量的作用域规则是一样的，即先当前函数的作用域，然后才是全局作用域。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> x = <span class="number">1</span>;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">f</span>(<span class="params">x, y=x</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(y);</span><br><span class="line">&#125;</span><br><span class="line">f(<span class="number">2</span>); <span class="comment">// 2</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>ES6 引入了 rest 参数(…)，用于获取函数的多余参数。rest 参数搭配的变量是一个数组，该变量将多余的参数放入其中。注意，rest 参数之后不能再有其它参数，即只能是最后一个参数，否则会报错。</p>
+</li>
+</ol>
+<h4 id="扩展运算符"><a href="#扩展运算符" class="headerlink" title="扩展运算符"></a>扩展运算符</h4><p>扩展运算符（…）相当于 rest 参数的逆运算，将一个数组转为用逗号分隔的参数序列(已经可以将一个对象转成所有 key-value 的形式)。扩展运算符内部调用的是数据结构的 Iterator 接口。如果没有 iterator 接口的对象使用扩展运算符，将会报错。</p>
+<p>对象中的扩展运算符是浅复制，即如果一个键的值是一个对象的引用，那么扩展运算符复制的是这个值的引用，而不是这个值的副本。也不会复制继承自原型对象的属性。扩展运算符的参数对象中，如果有取值函数get，那么这个函数是会执行的。</p>
+<h4 id="箭头函数"><a href="#箭头函数" class="headerlink" title="箭头函数"></a>箭头函数</h4><p>ES6 允许使用 =&gt; 定义函数。<code>const f = v =&gt; v</code>。</p>
+<ol>
+<li>如果箭头函数的代码块部分多余一条语句，则使用大括号将其括起来，并使用 return 语句返回。</li>
+<li>由于大括号被解释为代码块，所以如果箭头函数直接返回一个对象，必须在对象外面加上括号。</li>
+<li>箭头函数体内的 this 对象就是定义时所在的对象，而不是使用时所在的对象。</li>
+<li>不可以当做构造函数，即不可以使用 new 命令，否则会报错。</li>
+<li>不可以使用 arguments 对象，该对象在函数体内不存在。</li>
+<li>不可以使用 yield 命令，因此箭头函数不能用作 Generator 函数。</li>
+</ol>
+<h4 id="ES7-3"><a href="#ES7-3" class="headerlink" title="ES7"></a>ES7</h4><p>函数绑定运算符(::)，左边是一个对象，右边是一个函数。该函数会自动将左边的对象作为上下文环境(即 this 对象)绑定到右边的函数上。如果双冒号左边为空，右边是一个对象的方法，则等于将该对象方法绑定在该对象上。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> method = obj:: obj.foo;</span><br><span class="line"><span class="comment">// 等同于</span></span><br><span class="line"><span class="keyword">let</span> method = :: obj.foo;</span><br></pre></td></tr></table></figure>
+<p>由于双冒号运算符返回的还是原对象，因此可以采用链式写法。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> &#123; find, html &#125; = jake;</span><br><span class="line"><span class="built_in">document</span>.querySelector(<span class="string">'div.test'</span>)</span><br><span class="line">:: find(<span class="string">'p'</span>)</span><br><span class="line">:: html(<span class="string">'qingguoing'</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="对象的扩展"><a href="#对象的扩展" class="headerlink" title="对象的扩展"></a>对象的扩展</h3><ol>
+<li>Object.is(a, b) 用来比较两个值是否严格相等，与严格相等运算符（===）的行为基本一致。不同之处：一是 +0 不等于 -0，而是 NaN 等于自身。</li>
+<li>Object.assign(target, source1 [, source2 …]) 将源对象的所有可枚举属性复制到目标对象上。同名属性后面的会覆盖前面的属性。</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 对于嵌套的对象，会替换而不是添加</span></span><br><span class="line"><span class="keyword">const</span> target = &#123;<span class="attr">a</span> : &#123;<span class="attr">b</span>: <span class="string">'111'</span>, <span class="attr">c</span>: <span class="string">'222'</span> &#125;&#125;;</span><br><span class="line"><span class="keyword">const</span> source = &#123;<span class="attr">a</span>: &#123;b<span class="string">": 'hello' &#125;&#125;;</span></span><br><span class="line"><span class="string">Object.assign(target, source); // &#123;a: &#123;b: 'hello'&#125;&#125;</span></span><br></pre></td></tr></table></figure>
+<h3 id="Symbol"><a href="#Symbol" class="headerlink" title="Symbol"></a>Symbol</h3><p>ES6 引入了一种新的原始数据类型 Symbol，表示独一无二的值，它是 JavaScript 语言的第7种数据类型，前6种分别是：undefined、null、布尔值、字符串、数值和对象。Symbol 值通过 Symbol 函数生成。也就是说，对象的属性名现在可以有两种类型：一种是原来就有的字符串，另一种是新增的 Symbol 类型。只要属性名属于 Symbol 类型，就是独一无二的，可以保证不会与其他属性名产生冲突。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> s = <span class="built_in">Symbol</span>();</span><br><span class="line"><span class="keyword">typeof</span> s <span class="comment">// "symbol"</span></span><br></pre></td></tr></table></figure>
+<p>Symbol 函数前不能使用 new 命令，否则会报错。因为生成的 Symbol 是一个原始类型的值，不是对象。Symbol 函数可以接受一个字符串作为参数，表示对 Symbol 实例的描述。主要是为了在控制台显示或转为字符串时比较容易区分，所以相同参数的 Symbol 函数的返回值是不相等的。Symbol 值不能与其他类型的值进行运算，否则会报错，但是可以显示转为字符串和布尔值，不能转为数值。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> sym = <span class="built_in">Symbol</span>(<span class="string">'qingguoing'</span>);</span><br><span class="line"><span class="built_in">String</span>(sym); <span class="comment">// 'Symbol(qingguoing)'</span></span><br><span class="line">sym.toString(sym); <span class="comment">// 'Symbol(qingguoing)'</span></span><br><span class="line"><span class="built_in">Boolean</span>(sym); <span class="comment">// true</span></span><br><span class="line">!sym <span class="comment">// false</span></span><br></pre></td></tr></table></figure>
+<p>Symbol 作为属性名，不会出现在 for…in、for…of 循环中，也不会被 Object.keys()、Object.getOwnPropertyNames() 返回。但它也不是私有属性，Object.getOwnPropertySymbols() 可以获取指定对象的所有 Symbol 属性名。Reflect.ownKeys(object) 方法可以返回所有类型的键名，包括常规键名和 Symbole 键名。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> obj = &#123;</span><br><span class="line">    [<span class="built_in">Symbol</span>(<span class="string">'key'</span>)]: <span class="number">1</span>,</span><br><span class="line">    enum: <span class="number">2</span>,</span><br><span class="line">    test: <span class="number">3</span>,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">Reflect</span>.ownKeys(obj); <span class="comment">// [Symbol(key), 'enum', 'test']</span></span><br></pre></td></tr></table></figure>
+<ol>
+<li>Symbol.for(str) 搜索有没有以 str 为名称的 Symbol 值，有就返回这个 Symbol 值，否则就新建并返回一个已该字符串为名称的 Symbol 值。Symbol.for 为 Symbol 值登记的名字是全局环境的，可以在不同的 iframe 或 service worker 中取到同一个值。</li>
+<li>Symbol.keyFor(symbol) 返回一个已登记的 Symbol 类型值的 key。</li>
+</ol>
+<h3 id="内置的-Symbol-值"><a href="#内置的-Symbol-值" class="headerlink" title="内置的 Symbol 值"></a>内置的 Symbol 值</h3><p>ES6 提供了 11 个内置的 Symbol 值，指向语言内部使用的方法。</p>
+<ol>
+<li>Symbol.hasInstance 对象使用 instanceof 运算符时会调用这个方法，判断该对象是否为某个构造函数的实例。</li>
+<li>Symbol.isConcatSpreadable 布尔值，默认 true，表示该对象使用 Array.prototype.concat() 时是否可以展开。</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> arr1 = [<span class="string">'a'</span>, <span class="string">'b'</span>];</span><br><span class="line"><span class="keyword">let</span> arr2 = [<span class="string">'c'</span>, <span class="string">'d'</span>];</span><br><span class="line">arr2[<span class="built_in">Symbol</span>.isConcatSpreadable] = <span class="literal">false</span>;</span><br><span class="line">[<span class="string">'a'</span>, <span class="string">'b'</span>].concat(arr2, <span class="string">'e'</span>); <span class="comment">// ['a', 'b', ['c', 'd'], 'e']</span></span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li><p>Symbol.species 指向一个方法，对象作为构造函数构造实例时会调用这个方法。即如果 this.constructor[Symbol.species] 存在，就会使用这个属性作为构造函数来创造新的实例对象。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 默认读取器</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">get</span> [Symbol.species]() &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Symbol.match 函数，当执行 str.match(myObject) 时，如果该属性存在，会调用它返回该方法的返回值。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">String</span>.prototype.match(regexp);</span><br><span class="line"><span class="comment">// 等同于</span></span><br><span class="line">regexp[<span class="built_in">Symbol</span>.match](<span class="keyword">this</span>);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Symbol.replace 当对象被 String.prototype.replace 方法调用时会返回该方法的返回值。</p>
+</li>
+<li>Symbol.search 当对象被 String.prototype.search 方法调用时会返回该方法的返回值。</li>
+<li>Symbol.split 当对象被 String.prototype.split 方法调用时会返回该方法的返回值。</li>
+<li>Symbol.iterator 对象的该属性指向其默认遍历器方法，即对象在进行 for…of 循环时会调用这个方法，返回该对象的默认遍历器。</li>
+<li>Symbol.toPrimitive 对象被转为原始类型值时会调用这个方法，返回该对象对应的原始类型值。Symbol.toPrimitive 被调用时会接受一个字符串参数，表示当前运算的模式。一共有三种模式。<ul>
+<li>Number 转成数值。</li>
+<li>String 转成字符串。</li>
+<li>Default 可以转成数值，也可以转成字符串。</li>
+</ul>
+</li>
+<li><p>Symbol.toStringTag 在对象上调用 Object.prototype.toString 方法时，如果这个属性存在，其返回值会出现在 toString 方法返回的字符串中，表示对象的类型。即这个属性可用于定制 [object Object] 或 [object Array] 中 object 后面的字符串。</p>
+</li>
+<li><p>({[Symbol.toStringTag]: ‘Foo’}.toString()) // “[object Foo]”<br>Symbol.unscopables 指向一个对象，指定了使用 with 关键字时哪些属性会被 with 环境排除。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span> </span>&#123;</span><br><span class="line">    foo() &#123; <span class="keyword">return</span> <span class="number">1</span>; &#125;</span><br><span class="line">    <span class="keyword">get</span> [Symbol.unscopables] &#123;</span><br><span class="line">        <span class="keyword">return</span> &#123; <span class="attr">foo</span>: <span class="literal">true</span> &#125;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> foo = <span class="function"><span class="params">()</span> =&gt;</span> <span class="number">2</span>;</span><br><span class="line"><span class="keyword">with</span>(MyClass.prototype) &#123;</span><br><span class="line">    foo(); <span class="comment">// 2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="Proxy-和-Reflect"><a href="#Proxy-和-Reflect" class="headerlink" title="Proxy 和 Reflect"></a>Proxy 和 Reflect</h3><h4 id="Proxy"><a href="#Proxy" class="headerlink" title="Proxy"></a>Proxy</h4><p>Proxy 用于修改某些操作的默认行为，可以理解成在目标对象前架设一”拦截”层，外界对该对象的访问都必须先通过这层拦截，因此提供了一种机制，可以对外界的访问进行过滤和改写。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> proxy = <span class="keyword">new</span> <span class="built_in">Proxy</span>(target, handler);</span><br></pre></td></tr></table></figure>
+<p>Proxy 对象的所有用法都是上面这种形式，不同的只是 handler 参数的写法。其中，new Proxy() 表示生成一个 Proxy 实例，target 参数表示所要拦截的目标对象，handler 参数也是一个对象，用来定制拦截行为。注意，要使 Proxy 起作用，必须针对 Proxy 实例进行操作，而不是针对目标对象。如果 handler 没有任何拦截，那就等同于直接通向原对象。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> proxy = <span class="keyword">new</span> <span class="built_in">Proxy</span>(&#123;&#125;, &#123;</span><br><span class="line">    <span class="keyword">get</span>: function(target, property) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">35</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br><span class="line">proxy.time; <span class="comment">// 35</span></span><br><span class="line">proxy.name; <span class="comment">// 35</span></span><br><span class="line">proxy.title; <span class="comment">// 35</span></span><br><span class="line"><span class="comment">// Proxy 实例也可以作为其他对象的原型对象</span></span><br><span class="line"><span class="keyword">let</span> obj = <span class="built_in">Object</span>.create(proxy);</span><br><span class="line">obj.time; <span class="comment">// 35</span></span><br></pre></td></tr></table></figure>
+<p>同一个拦截器函数可以设置拦截多个操作。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> hanler = &#123;</span><br><span class="line">    <span class="keyword">get</span>(target, name) &#123;</span><br><span class="line">        <span class="keyword">if</span> (name === <span class="string">'prototype'</span>) <span class="keyword">return</span> <span class="built_in">Object</span>.prototype;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">`hello <span class="subst">$&#123;name&#125;</span>`</span>;</span><br><span class="line">    &#125;,</span><br><span class="line">    apply(target, thisBinding, args) &#123;</span><br><span class="line">        <span class="keyword">return</span> args[<span class="number">0</span>];</span><br><span class="line">    &#125;,</span><br><span class="line">    construct(target, args) &#123;</span><br><span class="line">        <span class="keyword">return</span> args[<span class="number">1</span>];</span><br><span class="line">    &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">const</span> fproxy = <span class="keyword">new</span> <span class="built_in">Proxy</span>(<span class="function"><span class="keyword">function</span>(<span class="params">x, y</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> x + y;</span><br><span class="line">&#125;, handler);</span><br><span class="line">fproxy(<span class="number">1</span>, <span class="number">2</span>); <span class="comment">// 11</span></span><br><span class="line"><span class="keyword">new</span> fproxy(<span class="number">1</span>, <span class="number">2</span>); <span class="comment">// 2</span></span><br><span class="line">fproxy.prototype; <span class="comment">// Object.prototype</span></span><br><span class="line">fproxy.foo; <span class="comment">// 'hello foo'</span></span><br></pre></td></tr></table></figure>
+<p>Proxy 支持的拦截操作：</p>
+<ol>
+<li>get(target, propKey[, receiver]) 拦截对象属性的读取，返回类型不限。当 target 对象设置了 propKey 属性的 get 函数时，receiver 对象会绑定 get 函数的 this 对象。</li>
+<li>set(target, propKey, value, receiver) 拦截对象属性的设置，返回一个布尔值。返回 false 时，严格模式下的赋值操作会报错。</li>
+<li>has(target, proKey) 拦截 propKey in proxy 的操作，返回一个布尔值。如果原对象 target 不可配置或禁止扩展，has 拦截会报错。</li>
+<li>deleteProperty(target, propKey) 拦截 delete proxy[propKey] 的操作，返回一个布尔值。</li>
+<li>enumerate(target) 拦截 for(var x in proxy)，返回一个遍历器。返回的不是一个对象，就会报错。</li>
+<li>hasOwn(target, propKey) 拦截 proxy.hasOwnProperty(‘foo’)，返回一个布尔值。</li>
+<li>ownKeys(target) 拦截 Object.getOwnPropertyNames(proxy)、Object.getOwnPropertySymbols(proxy)、Object.keys(proxy)，返回一个数组。</li>
+<li>getOwnPropertyDescriptor(target, propKey) 拦截 Object.getOwnPropertyDescriptor(proxy, propKey)，返回属性的描述对象。</li>
+<li>defineProperty(target, propKey, propDesc) 拦截 Object.defineProperty(proxy, propKey, propDesc)、Object.defineProperties(proxy, propDesc)，返回一个布尔值。</li>
+<li>getPrototypeOf(target) 拦截 Object.getPrototypeOf(proxy)，返回一个对象。</li>
+<li>isExtensible(target) 拦截 Object.isExtensible(proxy)，返回一个布尔值。若 Object.isExtensible(proxy) === Object.isExtensible(target) 条件不满足，就会报错。</li>
+<li><p>preventExtensions(target) 拦截 Object.preventExtensions(proxy)，返回一个布尔值。只有当 Object.isExtensible(proxy) 为 false 时，proxy.preventExtensions 才能返回true，否则报错。为了防止出错，通常需要在 proxy.preventExtensions 方法中调用一次 Object.preventExtensions。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> p = <span class="keyword">new</span> <span class="built_in">Proxy</span>(&#123;&#125;, &#123;</span><br><span class="line">    preventExtensions(target) &#123;</span><br><span class="line">        <span class="built_in">Object</span>.preventExtensions(target);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>setPrototypeOf(target, proto) 拦截 Object.setPrototypeOf(proxy, proto)，返回一个布尔值。</p>
+</li>
+</ol>
+<p>如果目标对象是函数，另外提供以下两种操作可以拦截：</p>
+<ol>
+<li>apply(target, object, args) 拦截 proxy 作为函数调用的操作，比如 proxy(…args)、proxy.call(object, …args)、proxy.apply(…)。</li>
+<li>construct(target, args, proxy) 拦截 proxy 作为构造函数调用的操作。若返回的不是对象，就会抛出错误。</li>
+</ol>
+<p>另外，Proxy.revocable() 返回一个可取消的 Proxy 实例。该方法返回一个对象，其中 proxy 属性是 Proxy 实例，revoke 属性是一个函数，可以取消 Proxy 实例。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> target = &#123;&#125;;</span><br><span class="line"><span class="keyword">let</span> handler = &#123;&#125;;</span><br><span class="line"><span class="keyword">let</span> &#123; proy, revoke &#125; = <span class="built_in">Proxy</span>.revocable(target, handler);</span><br><span class="line">proxy.foo = <span class="number">123</span>;</span><br><span class="line">proxy.foo <span class="comment">// 123</span></span><br><span class="line">revoke();</span><br><span class="line">proxy.foo <span class="comment">// TypeError: Revoked</span></span><br></pre></td></tr></table></figure>
+<h4 id="Reflect"><a href="#Reflect" class="headerlink" title="Reflect"></a>Reflect</h4><p>ES6 为了操作对象而提供的新 API。Reflect 对象的设计目的有以下几个：</p>
+<ol>
+<li>将 Object 对象的一些明显属于语言层面的放到 Reflect 对象上。</li>
+<li>修改某些 Object 方法的返回结果，让其变得更合理。</li>
+<li>让 Object 操作都变成函数行为。</li>
+<li>Reflect 对象的方法与 Proxy 对象的方法一一对应，只要是 Proxy 对象的方法，就能在 Reflect 对象上找到对应的方法。这就让 Proxy 对象可以方便地调用对应的 Reflect 方法完成默认行为，作为修改行为的基础。</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://qingguoing.com/2017/09/24/ES6-学习笔记-1/" data-id="cjxhnmilk002yjp8cqs75lpan" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ES6/">ES6</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/09/25/ES6-学习笔记-2/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          ES6 学习笔记(2)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/08/21/何为虚拟-DOM-1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">何为虚拟 DOM (1)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Babel/">Babel</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Diary/">Diary</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/HTTP/">HTTP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/JavaScript/">JavaScript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/React/">React</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术论坛/">技术论坛</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Async/">Async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/D2/">D2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ES6/">ES6</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EventLoop/">EventLoop</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Flux/">Flux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/H5/">H5</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JS-异步处理系列/">JS 异步处理系列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node/">Node</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Promise/">Promise</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redux/">Redux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vue/">Vue</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/awk/">awk</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel-plugin/">babel-plugin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/koa/">koa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/learning/">learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/生活随笔/">生活随笔</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/自动化测试/">自动化测试</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Async/" style="font-size: 10px;">Async</a> <a href="/tags/D2/" style="font-size: 10px;">D2</a> <a href="/tags/ES6/" style="font-size: 16.67px;">ES6</a> <a href="/tags/EventLoop/" style="font-size: 13.33px;">EventLoop</a> <a href="/tags/Flux/" style="font-size: 13.33px;">Flux</a> <a href="/tags/H5/" style="font-size: 10px;">H5</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/JS-异步处理系列/" style="font-size: 20px;">JS 异步处理系列</a> <a href="/tags/Node/" style="font-size: 10px;">Node</a> <a href="/tags/Performance/" style="font-size: 10px;">Performance</a> <a href="/tags/Promise/" style="font-size: 10px;">Promise</a> <a href="/tags/Redux/" style="font-size: 10px;">Redux</a> <a href="/tags/Vue/" style="font-size: 10px;">Vue</a> <a href="/tags/awk/" style="font-size: 10px;">awk</a> <a href="/tags/babel-plugin/" style="font-size: 10px;">babel-plugin</a> <a href="/tags/koa/" style="font-size: 13.33px;">koa</a> <a href="/tags/learning/" style="font-size: 10px;">learning</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/vscode/" style="font-size: 10px;">vscode</a> <a href="/tags/生活随笔/" style="font-size: 10px;">生活随笔</a> <a href="/tags/自动化测试/" style="font-size: 10px;">自动化测试</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">April 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/06/27/自动处理对象结构中-null-字段的-babel-插件/">自动处理对象结构中 null 字段的 babel 插件</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/26/如何编写好一个测试用例/">如何编写好一个测试用例</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/20/JS-异步处理系列（四）-async-await/">JS 异步处理系列（四）- async &amp; await</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/19/JS-异步处理系列（三）-Promise/">JS 异步处理系列（三）- Promise</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/14/JS-异步处理系列（二）-Node-Event-Loop/">JS 异步处理系列（二）- Node Event Loop</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 qingguoing<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

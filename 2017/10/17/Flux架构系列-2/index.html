@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>Flux架构系列(2) | QINGGUOING</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="分析 flux 架构系列的结构和流程，包括 flux、redux 和 mobx，本篇文章主要分析 redux 3.7.2 版本的源码。">
+<meta name="keywords" content="Flux,Redux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flux架构系列(2)">
+<meta property="og:url" content="https://qingguoing.com/2017/10/17/Flux架构系列-2/index.html">
+<meta property="og:site_name" content="QINGGUOING">
+<meta property="og:description" content="分析 flux 架构系列的结构和流程，包括 flux、redux 和 mobx，本篇文章主要分析 redux 3.7.2 版本的源码。">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-06-29T15:01:39.332Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Flux架构系列(2)">
+<meta name="twitter:description" content="分析 flux 架构系列的结构和流程，包括 flux、redux 和 mobx，本篇文章主要分析 redux 3.7.2 版本的源码。">
+  
+    <link rel="alternate" href="/atom.xml" title="QINGGUOING" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">QINGGUOING</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://qingguoing.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Flux架构系列-2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/10/17/Flux架构系列-2/" class="article-date">
+  <time datetime="2017-10-17T07:53:05.000Z" itemprop="datePublished">2017-10-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/React/">React</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Flux架构系列(2)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>分析 flux 架构系列的结构和流程，包括 flux、redux 和 mobx，本篇文章主要分析 redux 3.7.2 版本的源码。</p>
+<a id="more"></a>
+<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>redux 作为当前流行的状态管理库，继承 flux 架构的思想，其实现思路也是值得研究。本文接下来分析 redux 的源码的思路和实现，该库的使用方法可参考官方网站。</p>
+<h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>首先，熟悉下 redux 库里面的各种概念。</p>
+<ol>
+<li>单一 store： redux 中，整个应用的 state 被储存在一棵 object tree 中，并且这个 object tree 只存在于唯一一个 store 中。应用的 state 是只读的，而整个唯一改变 state 的方法就是触发 action，action 是一个用于描述已发生事件的普通对象。</li>
+<li>reducer：为了描述 action 如何改变 state tree。Reducer 只是一些纯函数，它接收先前的 state 和 action，并返回新的 state。</li>
+<li>actionCreator：生成 action 对象的函数。</li>
+<li>dispatch: 一个接收 action 或者异步 action的函数，该函数要么往 store 分发一个或多个 action，要么不分发任何 action。</li>
+<li>Middleware：一个组合 dispatch function 的高阶函数，返回一个新的 dispatch function，通常将异步 actions 转换成 action。</li>
+</ol>
+<h3 id="Middleware-原理"><a href="#Middleware-原理" class="headerlink" title="Middleware 原理"></a>Middleware 原理</h3><p>redux 默认只支持以同步方式维护 store 的功能，对于异步请求、日志打印等额外功能，采用 middleware 中间件的方式，而且这也是 redux 中的强大且难于理解之处。默认我们通过如下几种方式采用 Middleware：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// with preloadedState</span></span><br><span class="line"><span class="keyword">const</span> store = createStore(reducer, preloadedState, applyMiddleware(...middleware));</span><br><span class="line"><span class="comment">// no preloadedState</span></span><br><span class="line"><span class="keyword">const</span> store = createStore(reducer, applyMiddleware(...middleware));</span><br><span class="line">createStore 中关于 enhancer 的部分源码如下，执行了 enhancer 第一次执行返回的函数。</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span> <span class="title">createStore</span>(<span class="params">reducer, preloadedState, enhancer</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="keyword">return</span> enhancer(createStore)(reducer, preloadedState)</span><br><span class="line">    <span class="comment">//...</span></span><br></pre></td></tr></table></figure>
+<p>而 applyMiddleware 源码如下，结合上面的部分代码，我们可以看出 createStore 参数是原有的 createStore，args 参数是 [reducer, preloadedState]，最后返回的是一个包含了新的 dispatch 的 store 对象。另外，传给 middleware 中的新 dispatch 是一个包含原先 dispatch 的匿名函数。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span> <span class="title">applyMiddleware</span>(<span class="params">...middlewares</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function">(<span class="params">createStore</span>) =&gt;</span> <span class="function">(<span class="params">reducer, preloadedState, enhancer</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">const</span> store = createStore(reducer, preloadedState, enhancer)</span><br><span class="line">        <span class="keyword">let</span> dispatch = store.dispatch</span><br><span class="line">        <span class="keyword">let</span> chain = []</span><br><span class="line">        <span class="keyword">const</span> middlewareAPI = &#123;</span><br><span class="line">            getState: store.getState,</span><br><span class="line">            dispatch: <span class="function">(<span class="params">action</span>) =&gt;</span> dispatch(action)</span><br><span class="line">        &#125;</span><br><span class="line">        chain = middlewares.map(<span class="function"><span class="params">middleware</span> =&gt;</span> middleware(middlewareAPI))</span><br><span class="line">        dispatch = compose(...chain)(store.dispatch)</span><br><span class="line">        <span class="keyword">return</span> &#123;</span><br><span class="line">            ...store,</span><br><span class="line">            dispatch</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>compose 源码如下，compose[f, g, h] 返回实际 f(g(h())) 的效果。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span> <span class="title">compose</span>(<span class="params">...funcs</span>) </span>&#123;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">    <span class="keyword">return</span> funcs.reduce(<span class="function">(<span class="params">a, b</span>) =&gt;</span> <span class="function">(<span class="params">...args</span>) =&gt;</span> a(b(...args)));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面是一个简单的 logger middleware 源码，此处 store 是上面中的 middlewareAPI，next 是 前一个 middleware 装饰后返回的 store.dispatch 或者 原始的 store.dispatch，action 参数是代码中实际 dispatch 的 action 对象。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> logger = <span class="function"><span class="params">store</span> =&gt;</span> <span class="function"><span class="params">next</span> =&gt;</span> <span class="function"><span class="params">action</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'logger...'</span>, action);</span><br><span class="line">    next(action);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>至此，middle 的本质是包装了 store 的 dispatch 方法，达到实际想要的目的。多个 middleware 可以被组合到一起使用，形成 middleware 链。其中，每个 middleware 都不需要关心链中它前后的 middleware 的任何信息。下面是另一个 redux-thunk middleware 的部分源码。此时如果传入的 action 是一个函数类型，会直接打断后面的 middleware 链的调用，一般建议对于异步 action 的处理的 middleware 第一个传入，因为后面同步的 middleware 链期望传入的 action 是 plain objects。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> createThunkMiddleware(extraArgument) =&gt; <span class="function"><span class="params">store</span> =&gt;</span> <span class="function"><span class="params">next</span> =&gt;</span> <span class="function"><span class="params">action</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> action === <span class="string">'function'</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> action(dispatch, getState, extraArgument);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> next(action);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="react-redux"><a href="#react-redux" class="headerlink" title="react-redux"></a>react-redux</h3><p>redux 是一种状态管理库，如果需要与 react 结合开发，则需要用到 react-redux 库。react-redux 仅仅暴露出来两个 API，所以用法也很简单。首先，通过 Provider 包裹 react 应用的顶层容器，并将 redux 中的 store 作为 props 传入。然后在需要用到该 store 的组件上，通过 connect 连接。接下来我们分析 react-redux 5.0.6 版本的源码实现。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;Provider store&gt;</span><br></pre></td></tr></table></figure>
+<p>将接受的 props.store 转为 context 上的属性传递给子组件。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Provider</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> childContextTypes = &#123;</span><br><span class="line">        [storeKey]: storeShape.isRequired,</span><br><span class="line">        [subscriptionKey]: subscriptionShape,</span><br><span class="line">    &#125;</span><br><span class="line">    getChildContext() &#123;</span><br><span class="line">        <span class="keyword">return</span> &#123; [storeKey]: <span class="keyword">this</span>[storeKey], [subscriptionKey]: <span class="literal">null</span> &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">connect([mapStateToProps], [mapDispatchToProps], [mergeProps], [options])</span><br></pre></td></tr></table></figure>
+<p>connect 组件封住传进来的 WrappedComponent 组件，通过 store.subscribe api 监听 store 的变化。</p>
+<p>// TODO: connect 源码</p>
+<h3 id="reselect"><a href="#reselect" class="headerlink" title="reselect"></a>reselect</h3><p>从上面的 react-redux 中的 connect 可知，每次 dispatch 一个 action，state 改变之后都会触发 mapStateToProps，即使接受的新的 state 和之前的 state 数据一样，但是也会触发函数的执行，很明显这种方式会存在一定程度的性能浪费，尤其是当 state 树很庞大时，而 reselect 可以优化这一情况，避免很多重复的计算。</p>
+<p>下面我们先从修改 redux 的 todos 示例入手介绍一下 reselect 的概念。</p>
+<h4 id="selector"><a href="#selector" class="headerlink" title="selector"></a>selector</h4><p>reselect 提供了 createSelector 函数创建具有记忆功能的函数。接受一个由 input-selectors 组成的数组和一个 transform 函数作为参数。当 redux 的 state 改变时，会导致 input-selectors 的值发生改变，这时 selector 会把 input-selectors 的值传入到 transform 函数调用。如果传入的值和之前传入的参数一致，直接返回前一次的调用结果，不会再调用 transform 函数。另外，selector 每次只能缓存前一次的调用参数和结果。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; createSelector &#125; <span class="keyword">from</span> <span class="string">'reselect'</span></span><br><span class="line"><span class="keyword">const</span> getVisibilityFilter = <span class="function">(<span class="params">state</span>) =&gt;</span> state.visibilityFilter</span><br><span class="line"><span class="keyword">const</span> getTodos = <span class="function">(<span class="params">state</span>) =&gt;</span> state.todos</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> getVisibleTodos = createSelector(</span><br><span class="line">  [ getVisibilityFilter, getTodos ],</span><br><span class="line">  (visibilityFilter, todos) =&gt; &#123;</span><br><span class="line">    <span class="keyword">switch</span> (visibilityFilter) &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">'SHOW_ALL'</span>:</span><br><span class="line">        <span class="keyword">return</span> todos</span><br><span class="line">      <span class="keyword">case</span> <span class="string">'SHOW_COMPLETED'</span>:</span><br><span class="line">        <span class="keyword">return</span> todos.filter(<span class="function"><span class="params">t</span> =&gt;</span> t.completed)</span><br><span class="line">      <span class="keyword">case</span> <span class="string">'SHOW_ACTIVE'</span>:</span><br><span class="line">        <span class="keyword">return</span> todos.filter(<span class="function"><span class="params">t</span> =&gt;</span> !t.completed)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>在 reselect 中，一个 selector 可以接受另一个 selector 作为 input-selectors 传入。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> getKeyword = <span class="function">(<span class="params">state</span>) =&gt;</span> state.keyword</span><br><span class="line"><span class="keyword">const</span> getVisibleTodosFilteredByKeyword = createSelector(</span><br><span class="line">  [ getVisibleTodos, getKeyword ],</span><br><span class="line">  (visibleTodos, keyword) =&gt; visibleTodos.filter(</span><br><span class="line">    todo =&gt; todo.text.includes(keyword)</span><br><span class="line">  )</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>接下来，我们通过 react-redux 中 connect 方法的 mapStateToProps 参数将创建的 selector 和 redux 结合。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; getVisibleTodos &#125; <span class="keyword">from</span> <span class="string">'../selectors'</span></span><br><span class="line"><span class="keyword">const</span> mapStateToProps = <span class="function">(<span class="params">state</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    todos: getVisibleTodos(state)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> VisibleTodoList = connect(</span><br><span class="line">  mapStateToProps</span><br><span class="line">)(TodoList)</span><br></pre></td></tr></table></figure>
+<h4 id="reselect-原理"><a href="#reselect-原理" class="headerlink" title="reselect 原理"></a>reselect 原理</h4><p>// TODO: 先分析 react-redux 中的 connect 原理</p>
+<h3 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h3><p>本文简单分析 redux 源码的实践过程，针对 redux 中的中间件机制做了深入解析。顺带梳理了 react-redux 的思路。然而 redux 源码虽然简单，但真正使用起来会发现里面充斥着各种概念，改动一处需求至少改动三个文件（actionType、reducer 与 actionCreator）。而一款面向对象编程的框架 mobx 将不会存在这个问题。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://qingguoing.com/2017/10/17/Flux架构系列-2/" data-id="cjxhnmijr0001jp8c436pvxuh" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Flux/">Flux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Redux/">Redux</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/10/30/Debug-in-VSCode/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Debug in VSCode
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/10/15/Flux架构系列-1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Flux架构系列(1)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Babel/">Babel</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Diary/">Diary</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/HTTP/">HTTP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/JavaScript/">JavaScript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/React/">React</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术论坛/">技术论坛</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Async/">Async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/D2/">D2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ES6/">ES6</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EventLoop/">EventLoop</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Flux/">Flux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/H5/">H5</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JS-异步处理系列/">JS 异步处理系列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node/">Node</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Promise/">Promise</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redux/">Redux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vue/">Vue</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/awk/">awk</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel-plugin/">babel-plugin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/koa/">koa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/learning/">learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/生活随笔/">生活随笔</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/自动化测试/">自动化测试</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Async/" style="font-size: 10px;">Async</a> <a href="/tags/D2/" style="font-size: 10px;">D2</a> <a href="/tags/ES6/" style="font-size: 16.67px;">ES6</a> <a href="/tags/EventLoop/" style="font-size: 13.33px;">EventLoop</a> <a href="/tags/Flux/" style="font-size: 13.33px;">Flux</a> <a href="/tags/H5/" style="font-size: 10px;">H5</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/JS-异步处理系列/" style="font-size: 20px;">JS 异步处理系列</a> <a href="/tags/Node/" style="font-size: 10px;">Node</a> <a href="/tags/Performance/" style="font-size: 10px;">Performance</a> <a href="/tags/Promise/" style="font-size: 10px;">Promise</a> <a href="/tags/Redux/" style="font-size: 10px;">Redux</a> <a href="/tags/Vue/" style="font-size: 10px;">Vue</a> <a href="/tags/awk/" style="font-size: 10px;">awk</a> <a href="/tags/babel-plugin/" style="font-size: 10px;">babel-plugin</a> <a href="/tags/koa/" style="font-size: 13.33px;">koa</a> <a href="/tags/learning/" style="font-size: 10px;">learning</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/vscode/" style="font-size: 10px;">vscode</a> <a href="/tags/生活随笔/" style="font-size: 10px;">生活随笔</a> <a href="/tags/自动化测试/" style="font-size: 10px;">自动化测试</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">April 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/06/27/自动处理对象结构中-null-字段的-babel-插件/">自动处理对象结构中 null 字段的 babel 插件</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/26/如何编写好一个测试用例/">如何编写好一个测试用例</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/20/JS-异步处理系列（四）-async-await/">JS 异步处理系列（四）- async &amp; await</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/19/JS-异步处理系列（三）-Promise/">JS 异步处理系列（三）- Promise</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/14/JS-异步处理系列（二）-Node-Event-Loop/">JS 异步处理系列（二）- Node Event Loop</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 qingguoing<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

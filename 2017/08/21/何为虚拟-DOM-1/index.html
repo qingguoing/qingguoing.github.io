@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>何为虚拟 DOM (1) | QINGGUOING</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="虚拟 DOM 系列，持续分析一些当前流行的虚拟 DOM 框架和库的思想，该篇主要分析的是 Vue 框架内部采用的虚拟 DOM 库 snabbdom。">
+<meta name="keywords" content="Vue">
+<meta property="og:type" content="article">
+<meta property="og:title" content="何为虚拟 DOM (1)">
+<meta property="og:url" content="https://qingguoing.com/2017/08/21/何为虚拟-DOM-1/index.html">
+<meta property="og:site_name" content="QINGGUOING">
+<meta property="og:description" content="虚拟 DOM 系列，持续分析一些当前流行的虚拟 DOM 框架和库的思想，该篇主要分析的是 Vue 框架内部采用的虚拟 DOM 库 snabbdom。">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://ws1.sinaimg.cn/large/cab372d4ly1fj9ogejeooj21oq14atfc.jpg">
+<meta property="og:updated_time" content="2019-06-29T15:01:39.336Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="何为虚拟 DOM (1)">
+<meta name="twitter:description" content="虚拟 DOM 系列，持续分析一些当前流行的虚拟 DOM 框架和库的思想，该篇主要分析的是 Vue 框架内部采用的虚拟 DOM 库 snabbdom。">
+<meta name="twitter:image" content="https://ws1.sinaimg.cn/large/cab372d4ly1fj9ogejeooj21oq14atfc.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="QINGGUOING" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">QINGGUOING</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://qingguoing.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-何为虚拟-DOM-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/08/21/何为虚拟-DOM-1/" class="article-date">
+  <time datetime="2017-08-21T15:19:44.000Z" itemprop="datePublished">2017-08-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      何为虚拟 DOM (1)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>虚拟 DOM 系列，持续分析一些当前流行的虚拟 DOM 框架和库的思想，该篇主要分析的是 Vue 框架内部采用的虚拟 DOM 库 snabbdom。</p>
+<a id="more"></a>
+<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>当下随着 Vue、React 等框架的流行，虚拟 DOM 大行其道。第一次听到这个词还是在15年学习 React 的时候。当时 React 以其明显高于 Angular 的性能优势迅速走红，什么虚拟 DOM 啦？什么修改 DOM 完全是操作内存中虚拟 DOM，然后再一次性更新到浏览器的真实 DOM 中？当时一听，瞬间感觉好高大上，可要问虚拟 DOM 是什么？怎么实现的？那真是一脸懵逼。时隔两年，我们来说说到底何为虚拟 DOM。</p>
+<h3 id="为何采用虚拟-DOM"><a href="#为何采用虚拟-DOM" class="headerlink" title="为何采用虚拟 DOM"></a>为何采用虚拟 DOM</h3><p>众所周知，频繁访问和操作 DOM 是一种很浪费性能的行为，即使浏览器已经采取了部分措施来优化。通常性能优化的经验就是减少 DOM 的访问 和 批量更新，例如使元素脱离文档流。 但随着应用规模的扩大，前端业务处理逻辑的增强，这些远远不够。而为了更好的优化性能，大牛们就联想到了虚拟 DOM。</p>
+<p>如今有很多流行的前端框架都内置了虚拟 DOM 算法来优化性能，例如 React，preact，inferno等，而本文接下来的内容将从 Vue 框架中的所采用的虚拟 DOM 算法 snabbdom 入手来说明何为虚拟 DOM。</p>
+<h3 id="虚拟节点"><a href="#虚拟节点" class="headerlink" title="虚拟节点"></a>虚拟节点</h3><p>首先，snabbdom 通过如下的数据结构来存储一个虚拟节点。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    sel: <span class="string">'div.page'</span>,</span><br><span class="line">    key: <span class="number">0</span>,</span><br><span class="line">    data: &#123;</span><br><span class="line">        <span class="string">"props"</span>: &#123;</span><br><span class="line">            className: <span class="string">"container"</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    children: [],</span><br><span class="line">    text: <span class="string">'hello world'</span>,</span><br><span class="line">    elm: Element</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中，sel 属性指代该虚拟节点映射到真实 DOM 中的容器节点。key 是唯一索引值，在列表排序中可以通过该唯一值节省非必要渲染的性能。data 是该节点的一些属性，例如上述显示该节点的 className 包含 container。children 存储该节点下面的所有子节点，每个子节点又是同样的虚拟节点结构。text 属性仅当该节点仅有一个文本子节点时，值为该文本内容。elm 属性指向该虚拟节点在对应的真实 DOM 元素。</p>
+<p>所以，现在我们应该明白，所谓的虚拟 DOM 本质上是通过恰当的数据结构和算法，来达到优化 DOM 操作性能的目的。嗯，至少目前看来，它确实是这样的。</p>
+<h3 id="DOM-节点的创建"><a href="#DOM-节点的创建" class="headerlink" title="DOM 节点的创建"></a>DOM 节点的创建</h3><p>首先我们通过框架暴露的 init 方法初始化一个指定的渲染函数 patch：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> patch = snabbdom.init([</span><br><span class="line">  <span class="built_in">require</span>(<span class="string">'../../modules/class'</span>).default,</span><br><span class="line">  <span class="built_in">require</span>(<span class="string">'../../modules/hero'</span>).default,</span><br><span class="line">  <span class="built_in">require</span>(<span class="string">'../../modules/style'</span>).default,</span><br><span class="line">  <span class="built_in">require</span>(<span class="string">'../../modules/eventlisteners'</span>).default,</span><br><span class="line">]);</span><br></pre></td></tr></table></figure>
+<p>然后与大多数虚拟 DOM 算法类似，需要指定渲染到真实 DOM 节点的容器 patch(container, vnode)，框架内部通过深度遍历上文中的虚拟节点结构创建真实的 DOM 树。最后通过 container.parentElement.replaceChild(vnode.ele, container) 方式成功转换成真实的浏览器 DOM 节点。</p>
+<h3 id="虚拟节点的更新"><a href="#虚拟节点的更新" class="headerlink" title="虚拟节点的更新"></a>虚拟节点的更新</h3><p>在第一次创建真实 DOM 节点之后，接下来的 DOM 更新 patch(oldVnode, vnode) 就需要 diff 新老虚拟节点，具体的处理逻辑如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//...</span></span><br><span class="line"><span class="keyword">var</span> elm = vnode.elm = oldVnode.elm;</span><br><span class="line"><span class="comment">//...</span></span><br><span class="line"><span class="keyword">if</span> (isUndef(vnode.text)) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isDef(oldCh) &amp;&amp; isDef(ch)) &#123;</span><br><span class="line">        <span class="comment">// 更新子节点即 children 属性</span></span><br><span class="line">        <span class="keyword">if</span> (oldCh !== ch) updateChildren(elm, oldCh, ch, insertedVnodeQueue);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isDef(ch)) &#123;</span><br><span class="line">        <span class="comment">// 添加新节点</span></span><br><span class="line">        addVnodes(elm, <span class="literal">null</span>, ch, <span class="number">0</span>, ch.length - <span class="number">1</span>, insertedVnodeQueue);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isDef(oldCh)) &#123;</span><br><span class="line">        <span class="comment">// 删除没有的旧节点</span></span><br><span class="line">        removeVnodes(elm, oldCh, <span class="number">0</span>, oldCh.length - <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (oldVnode.text !== vnode.text) &#123;</span><br><span class="line">    <span class="comment">// 更新节点的 textContent</span></span><br><span class="line">    elm.textContent = vnode.text;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//...</span></span><br></pre></td></tr></table></figure>
+<p>此处摘录过来的第一行代码含有一个隐藏逻辑：并没有通过 document.createElement() 为新的虚拟节点创建真实的 elm，仍然使用的是第一步创建过的真实 DOM 容器元素。而子节点数组的 diff 更新流程如下：</p>
+<p><img src="https://ws1.sinaimg.cn/large/cab372d4ly1fj9ogejeooj21oq14atfc.jpg" alt="DOM 节点更新流程图"></p>
+<p>上述详细的处理流程在 updateChildren 函数中。而对于子节点再包含子节点，则是通过递归循环遍历所有情形。</p>
+<h3 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h3><p>snabbdom 的核心是虚拟 DOM 库，其他例如样式和事件都是通过第三方模块的方式完成的，使用者通过 init 传入需要的功能模块。而这些第三方模块实际上是通过一种生命周期钩子的方式注入的，例如：class 模块内部源码就是下面这样</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> classModule = &#123; <span class="attr">create</span>: updateClass, <span class="attr">update</span>: updateClass&#125;;</span><br></pre></td></tr></table></figure>
+<p>在 create 和 update 生命周期阶段更新元素的 class。而框架内部支持如下几种生命周期钩子：[‘create’, ‘update’, ‘remove’, ‘destroy’, ‘pre’, ‘post’]。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>本文简单的描述了 Vue 框架里面引用的 snabbdom 的虚拟 DOM 思想，而这只是当下流行的虚拟 DOM 的冰山一角，下篇我们会对 React 库里面采用的虚拟 DOM 思路进行分析，这也是是令 React 大行其道的最重要原因。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://qingguoing.com/2017/08/21/何为虚拟-DOM-1/" data-id="cjxhnmikj000ujp8cu489o8rd" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Vue/">Vue</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/09/24/ES6-学习笔记-1/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          ES6 学习笔记(1)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/07/15/AWK分析nginx访问日志/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">AWK分析nginx访问日志</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Babel/">Babel</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Diary/">Diary</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/HTTP/">HTTP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/JavaScript/">JavaScript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/React/">React</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术论坛/">技术论坛</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Async/">Async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/D2/">D2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ES6/">ES6</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EventLoop/">EventLoop</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Flux/">Flux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/H5/">H5</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JS-异步处理系列/">JS 异步处理系列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node/">Node</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Promise/">Promise</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redux/">Redux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vue/">Vue</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/awk/">awk</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel-plugin/">babel-plugin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/koa/">koa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/learning/">learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/生活随笔/">生活随笔</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/自动化测试/">自动化测试</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Async/" style="font-size: 10px;">Async</a> <a href="/tags/D2/" style="font-size: 10px;">D2</a> <a href="/tags/ES6/" style="font-size: 16.67px;">ES6</a> <a href="/tags/EventLoop/" style="font-size: 13.33px;">EventLoop</a> <a href="/tags/Flux/" style="font-size: 13.33px;">Flux</a> <a href="/tags/H5/" style="font-size: 10px;">H5</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/JS-异步处理系列/" style="font-size: 20px;">JS 异步处理系列</a> <a href="/tags/Node/" style="font-size: 10px;">Node</a> <a href="/tags/Performance/" style="font-size: 10px;">Performance</a> <a href="/tags/Promise/" style="font-size: 10px;">Promise</a> <a href="/tags/Redux/" style="font-size: 10px;">Redux</a> <a href="/tags/Vue/" style="font-size: 10px;">Vue</a> <a href="/tags/awk/" style="font-size: 10px;">awk</a> <a href="/tags/babel-plugin/" style="font-size: 10px;">babel-plugin</a> <a href="/tags/koa/" style="font-size: 13.33px;">koa</a> <a href="/tags/learning/" style="font-size: 10px;">learning</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/vscode/" style="font-size: 10px;">vscode</a> <a href="/tags/生活随笔/" style="font-size: 10px;">生活随笔</a> <a href="/tags/自动化测试/" style="font-size: 10px;">自动化测试</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">April 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/06/27/自动处理对象结构中-null-字段的-babel-插件/">自动处理对象结构中 null 字段的 babel 插件</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/26/如何编写好一个测试用例/">如何编写好一个测试用例</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/20/JS-异步处理系列（四）-async-await/">JS 异步处理系列（四）- async &amp; await</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/19/JS-异步处理系列（三）-Promise/">JS 异步处理系列（三）- Promise</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/14/JS-异步处理系列（二）-Node-Event-Loop/">JS 异步处理系列（二）- Node Event Loop</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 qingguoing<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

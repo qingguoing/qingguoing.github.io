@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>H5 History API | QINGGUOING</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="通过H5的 history 和 location.hash 操作浏览器地址栏。">
+<meta name="keywords" content="H5">
+<meta property="og:type" content="article">
+<meta property="og:title" content="H5 History API">
+<meta property="og:url" content="https://qingguoing.com/2017/04/21/H5-History-API/index.html">
+<meta property="og:site_name" content="QINGGUOING">
+<meta property="og:description" content="通过H5的 history 和 location.hash 操作浏览器地址栏。">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-06-29T15:01:39.332Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="H5 History API">
+<meta name="twitter:description" content="通过H5的 history 和 location.hash 操作浏览器地址栏。">
+  
+    <link rel="alternate" href="/atom.xml" title="QINGGUOING" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">QINGGUOING</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://qingguoing.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-H5-History-API" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/04/21/H5-History-API/" class="article-date">
+  <time datetime="2017-04-21T15:42:10.000Z" itemprop="datePublished">2017-04-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      H5 History API
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>通过H5的 history 和 location.hash 操作浏览器地址栏。</p>
+<a id="more"></a>
+<p>HTML5规范早在2014年就已版本，而现在各大主流浏览器厂商早已实现对其的部分或者完全支持。网上记录关于 history 模块的文章也有很多。而最近在拜读 react-router v4 的源码时，发现了更多的一点东西，遂记录在案。</p>
+<h3 id="History"><a href="#History" class="headerlink" title="History"></a>History</h3><p>window 对象通过 history 对象提供对浏览器历史的访问。它暴露了有用的方法和属性，让您可以来回浏览用户的历史记录，以及从 HTML5 开始操纵历史堆栈的内容。</p>
+<h4 id="length"><a href="#length" class="headerlink" title="length"></a>length</h4><p>浏览器当前回话面板中历史元素的数目。例如，在 Chrome 中新开一个 tab 页，此时该面板中的 history.length 为1。</p>
+<h4 id="state"><a href="#state" class="headerlink" title="state"></a>state</h4><p>返回一个表示历史堆栈顶部的状态的值，即当前回话面板中的当前浏览记录绑定的状态值，默认是 null，会与当前会话面板一直存在中。可以通过下文中的 pushState 和 replaceState 方法手动更改该值。</p>
+<h4 id="scrollRestoration"><a href="#scrollRestoration" class="headerlink" title="scrollRestoration"></a>scrollRestoration</h4><p>允许Web应用程序在历史导航上显式地设置默认滚动恢复行为。此属性可以是自动的（auto）或者手动的（manual）。默认是自动的。</p>
+<h4 id="back"><a href="#back" class="headerlink" title="back()"></a>back()</h4><p>类似于浏览器返回按钮，返回到上一页。</p>
+<h4 id="forward"><a href="#forward" class="headerlink" title="forward()"></a>forward()</h4><p>类似于浏览器前进按钮，进入到下一页。</p>
+<h4 id="go-index"><a href="#go-index" class="headerlink" title="go(index)"></a>go(index)</h4><p>相对于当前所在位置，导航到浏览器历史堆栈中的任一位置。例如 history.go(0) 刷新当前页，history.go(1) 向前一页，等同于 history.forward()，history.go(-1) 返回到前一页，等同于 history.back()。</p>
+<h4 id="pushState-state-title-url"><a href="#pushState-state-title-url" class="headerlink" title="pushState(state, title, url)"></a>pushState(state, title, url)</h4><p>向当前面板浏览历史记录中推进一条新的记录，其中 state 参数对应上文中的 history.state，给下一条历史记录绑定state数据。参数 title 目前各大浏览器已经忽略这个参数，可以传 null 替代。参数 url 是浏览器地址栏将要显示的地址，可以是相对地址或者绝对地址。相对地址是相对于当前地址，绝对地址则要与当前地址处在同一源下，否则浏览器会直接报错，涉及跨域问题。</p>
+<p>该方法只是该变当前的历史堆栈，不会去主动请求页面 url 的内容和判断该页面是否存在。即通过调用改方法，只是浏览器地址栏中的地址更新了，当页面内容并没有刷新。</p>
+<h4 id="replaceState-state-title-url"><a href="#replaceState-state-title-url" class="headerlink" title="replaceState(state, title, url)"></a>replaceState(state, title, url)</h4><p>参数原理和 pushState 一致。不过是在在浏览历史堆栈中用新的 url 替换掉当前的 url。</p>
+<h3 id="Hash"><a href="#Hash" class="headerlink" title="Hash"></a>Hash</h3><p>window.location.hash 是指 URL 中的锚部分，即从 # 号开始之后的部分，表示这个位置的标识符。例如通过 HTML 实现一个简单的回到顶部按钮的效果原理：首先在页面顶部指定一个标识符，有如下两种方法：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">name</span>=<span class="string">"top"</span>&gt;</span><span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"top"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>然后在页面右下角放置一个回到顶部的按钮：<code>&lt;a href=&quot;#top&quot;&gt;回到顶部&lt;/a&gt;</code></p>
+<h4 id="HTTP请求不包括HASH部分"><a href="#HTTP请求不包括HASH部分" class="headerlink" title="HTTP请求不包括HASH部分"></a>HTTP请求不包括HASH部分</h4><p>因为 hash 部分只在浏览器端生效，表示锚点，所以不会被传送到服务器端。但是我们可以通过 encodeURIComponent 将 # 转成 %23 ，例如百度搜索就是采用这种方式。</p>
+<h4 id="HASH的改变"><a href="#HASH的改变" class="headerlink" title="HASH的改变"></a>HASH的改变</h4><p>改变 hash 部分的效果等同于上文中的 history.pushState 的方式，会生成新的浏览历史记录，但不会刷新或者重载网页的内容。</p>
+<h4 id="HASH的替换"><a href="#HASH的替换" class="headerlink" title="HASH的替换"></a>HASH的替换</h4><p>通过 window.location.replace(newUrl) 来模仿 history.replaceState ，替换当前页面的 hash 部分而又不生成新的浏览历史记录。</p>
+<h3 id="popstate"><a href="#popstate" class="headerlink" title="popstate"></a>popstate</h3><p>当激活状态的历史记录条目发生变化时，window.popstate 事件就会在对应 window 对象上触发。如果当前处于激活状态的历史记录条目是由 history.pushState() 方法创建,或者由 history.replaceState() 方法修改过的, 则 popstate 事件对象的 state 属性包含了这个历史记录条目的 state 对象的一个拷贝.</p>
+<p>但是调用 history.pushState() 或者 history.replaceState() 不会触发 popstate 事件。popstate 事件只会在浏览器某些行为下触发, 比如点击后退、前进按钮(或者在JavaScript中调用 history.back()、history.forward()、history.go() 方法)。另外，拖过其他方式更新页面的 hash 部分也会触发 popstate 事件（IE10、IE11除外）。</p>
+<h3 id="hashchange"><a href="#hashchange" class="headerlink" title="hashchange"></a>hashchange</h3><p>hashchange 事件在当前页面中的 hash 值改变时触发。hashchange 事件对象有如下两个属性：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    oldURL, <span class="comment">// 当前页面旧的url</span></span><br><span class="line">    newURL, <span class="comment">// 当前页面新的url</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="最后的最后"><a href="#最后的最后" class="headerlink" title="最后的最后"></a>最后的最后</h3><p>虽然上文中包含了很多 HTML5 新增的一些事件和方法，但随着最近几年各大浏览器厂商对 HTML5 的普及，hashchange 这种 HTML5 中新增的事件早已在 IE8 中实现了。不过对于 history.pushState() 和 popState 事件等其他方法，则只能在 IE10+ 中运行。而目前对于一些路由框架，则都提供了这两种实现方式：通过 history.pushState 等方式实现的 createBrowserHistory 和通过 window.location.hash 等方式实现的 createHashHistory。</p>
+<p>本文参考链接：</p>
+<ol>
+<li><p><a href="https://developer.mozilla.org/zh-CN/docs/DOM/Manipulating_the_browser_history" target="_blank" rel="noopener">https://developer.mozilla.org/zh-CN/docs/DOM/Manipulating_the_browser_history</a></p>
+</li>
+<li><p><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Window/onpopstate" target="_blank" rel="noopener">https://developer.mozilla.org/zh-CN/docs/Web/API/Window/onpopstate</a></p>
+</li>
+<li><p><a href="https://developers.google.com/web/updates/2015/09/history-api-scroll-restoration" target="_blank" rel="noopener">https://developers.google.com/web/updates/2015/09/history-api-scroll-restoration</a></p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://qingguoing.com/2017/04/21/H5-History-API/" data-id="cjxhnmijw0004jp8coixfraht" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/H5/">H5</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/07/15/AWK分析nginx访问日志/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          AWK分析nginx访问日志
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/08/18/博客简介/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">博客简介</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Babel/">Babel</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Diary/">Diary</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/HTTP/">HTTP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/JavaScript/">JavaScript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/React/">React</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术论坛/">技术论坛</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Async/">Async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/D2/">D2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ES6/">ES6</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EventLoop/">EventLoop</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Flux/">Flux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/H5/">H5</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JS-异步处理系列/">JS 异步处理系列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node/">Node</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Promise/">Promise</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redux/">Redux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vue/">Vue</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/awk/">awk</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel-plugin/">babel-plugin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/koa/">koa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/learning/">learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/生活随笔/">生活随笔</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/自动化测试/">自动化测试</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Async/" style="font-size: 10px;">Async</a> <a href="/tags/D2/" style="font-size: 10px;">D2</a> <a href="/tags/ES6/" style="font-size: 16.67px;">ES6</a> <a href="/tags/EventLoop/" style="font-size: 13.33px;">EventLoop</a> <a href="/tags/Flux/" style="font-size: 13.33px;">Flux</a> <a href="/tags/H5/" style="font-size: 10px;">H5</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/JS-异步处理系列/" style="font-size: 20px;">JS 异步处理系列</a> <a href="/tags/Node/" style="font-size: 10px;">Node</a> <a href="/tags/Performance/" style="font-size: 10px;">Performance</a> <a href="/tags/Promise/" style="font-size: 10px;">Promise</a> <a href="/tags/Redux/" style="font-size: 10px;">Redux</a> <a href="/tags/Vue/" style="font-size: 10px;">Vue</a> <a href="/tags/awk/" style="font-size: 10px;">awk</a> <a href="/tags/babel-plugin/" style="font-size: 10px;">babel-plugin</a> <a href="/tags/koa/" style="font-size: 13.33px;">koa</a> <a href="/tags/learning/" style="font-size: 10px;">learning</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/vscode/" style="font-size: 10px;">vscode</a> <a href="/tags/生活随笔/" style="font-size: 10px;">生活随笔</a> <a href="/tags/自动化测试/" style="font-size: 10px;">自动化测试</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">April 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/06/27/自动处理对象结构中-null-字段的-babel-插件/">自动处理对象结构中 null 字段的 babel 插件</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/26/如何编写好一个测试用例/">如何编写好一个测试用例</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/20/JS-异步处理系列（四）-async-await/">JS 异步处理系列（四）- async &amp; await</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/19/JS-异步处理系列（三）-Promise/">JS 异步处理系列（三）- Promise</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/14/JS-异步处理系列（二）-Node-Event-Loop/">JS 异步处理系列（二）- Node Event Loop</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 qingguoing<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

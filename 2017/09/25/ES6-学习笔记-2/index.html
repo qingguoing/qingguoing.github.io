@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>ES6 学习笔记(2) | QINGGUOING</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="紧接上篇，篇幅太长。包括二进制数组，Set，Map，Iterator，for…of 和 Generator 函数。">
+<meta name="keywords" content="ES6">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ES6 学习笔记(2)">
+<meta property="og:url" content="https://qingguoing.com/2017/09/25/ES6-学习笔记-2/index.html">
+<meta property="og:site_name" content="QINGGUOING">
+<meta property="og:description" content="紧接上篇，篇幅太长。包括二进制数组，Set，Map，Iterator，for…of 和 Generator 函数。">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-06-29T15:01:39.331Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ES6 学习笔记(2)">
+<meta name="twitter:description" content="紧接上篇，篇幅太长。包括二进制数组，Set，Map，Iterator，for…of 和 Generator 函数。">
+  
+    <link rel="alternate" href="/atom.xml" title="QINGGUOING" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.ico">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">QINGGUOING</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://qingguoing.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-ES6-学习笔记-2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/25/ES6-学习笔记-2/" class="article-date">
+  <time datetime="2017-09-25T08:52:12.000Z" itemprop="datePublished">2017-09-25</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/JavaScript/">JavaScript</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      ES6 学习笔记(2)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>紧接上篇，篇幅太长。包括二进制数组，Set，Map，Iterator，for…of 和 Generator 函数。</p>
+<a id="more"></a>
+<h3 id="二进制数组"><a href="#二进制数组" class="headerlink" title="二进制数组"></a>二进制数组</h3><p>二进制数组是 JavaScript 操作二进制数据的一个接口。二进制数组由3类对象组成：</p>
+<ol>
+<li>ArrayBuffer 对象：代表内存中的一段二进制数据，可以通过”视图”进行操作。</li>
+<li>TypedArray 视图：共包括9种类型的视图。</li>
+<li>DataView 视图：可以自定义复合格式的视图，也可以自定义字节序。</li>
+</ol>
+<p>简言之，ArrayBuffer 对象代表原始的二进制数据，TypedArray 视图用于 读/写 简单类型的二进制数据，DataView 视图用于读/写复杂类型的二进制数据。</p>
+<h3 id="ArrayBuffer-对象"><a href="#ArrayBuffer-对象" class="headerlink" title="ArrayBuffer 对象"></a>ArrayBuffer 对象</h3><p>ArrayBuffer 对象代表存储二进制数据的一段内存，不能直接读/写，只能通过视图(TypedArray 视图和 DataView 视图)读/写。ArrayBuffer 是一个构造函数，可分配一段可以存放数据的连续内存区域。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 下面生成了一段 32 字节的内存区域，每个字节的值默认都是0。</span></span><br><span class="line"><span class="keyword">let</span> buf = <span class="keyword">new</span> <span class="built_in">ArrayBuffer</span>(<span class="number">32</span>);</span><br></pre></td></tr></table></figure>
+<ol>
+<li>ArrayBuffer.prototype.byteLength 返回所分配的内存区域的字节长度。</li>
+<li>ArrayBuffer.prototype.slice(start [, end]) 将内存区域的一部分复制生成一个新的 ArrayBuffer 对象。</li>
+<li>ArrayBuffer.isView() 返回一个布尔值，判断参数是否为 ArrayBuffer 的视图实例。</li>
+</ol>
+<h3 id="TypedArray-视图"><a href="#TypedArray-视图" class="headerlink" title="TypedArray 视图"></a>TypedArray 视图</h3><p>ArrayBuffer 对象作为内存区域可以存放多种类型的数据。同一段内存，不同数据有不同的解读方式，这就叫作”视图”。TypedArray 视图的数组成员都是同一个数据类型。目前 TypedArray 视图一共包括9种类型，每一种视图都是一种构造函数：</p>
+<ol>
+<li>Int8Array 8位有符号整数，长度为1个字节。</li>
+<li>Uint8Array 8为无符号整数，长度为1个字节。</li>
+<li>Uint8ClampedArray 8为无符号整数，长度为1个字节，溢出处理不同。</li>
+<li>Int16Array 16位有符号整数，长度为2个字节。</li>
+<li>Uint16Array 16位无符号整数，长度为2个字节。</li>
+<li>Int32Array 32位有符号整数，长度为4个字节。</li>
+<li>Uint32Array 32位无符号整数，长度为4个字节。</li>
+<li>Float32Array 32位浮点数，长度为4个字节。</li>
+<li>Float64Array 64位浮点数，长度为8个字节。</li>
+</ol>
+<p>上面9个构造函数生成的数组，都有 length 属性，都能用方括号运算符获取单个元素，所有数组方法都能在其上使用。普通数组与 TypedArray 数组的差异主要在以下方面:</p>
+<ol>
+<li>TypedArray 数组的所有成员都是同一种类型。</li>
+<li>TypedArray 数组的成员是连续的，不会有空位。</li>
+<li>TypedArray 数组成员的默认值为0。new Array(10) 返回一个普通数组，里面没有任何成员，只有10个空位。</li>
+<li>TypedArray 数组只是一层视图，本身不存储数据，它的数据都存储在底层的 ArrayBuffer 对象中。</li>
+</ol>
+<p>同一个 ArrayBuffer 对象上，可以根据不同的数据类型建立多个视图。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TypedArray(buffer, byteOffset = <span class="number">0</span>, length ?)</span><br></pre></td></tr></table></figure>
+<ol>
+<li>buffer 参数(必须): 视图对应的底层 ArrayBuffer 对象。</li>
+<li>byteOffset 参数(可选): 视图开始的字节序号，默认从0开始。</li>
+<li>length 参数(可选): 视图包含的数据个数，默认直到本段内存区域结束。</li>
+</ol>
+<p>视图还可以不通过 ArrayBuffer 对象，而是直接分配内存生成。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> f64a = <span class="keyword">new</span> <span class="built_in">Float64Array</span>(<span class="number">8</span>);</span><br><span class="line">f64a[<span class="number">0</span>] = <span class="number">10</span>;</span><br><span class="line">f64a[<span class="number">1</span>] = <span class="number">20</span>;</span><br><span class="line">f64a[<span class="number">2</span>] = f64a[<span class="number">0</span>] + f64a[<span class="number">1</span>];</span><br></pre></td></tr></table></figure>
+<p>TypedArray 数组的构造函数可以接受另一个 TypedArray 实例作为参数。此时生成的新数组只是复制了参数数组的值，对应的底层内存是不一样的。新数组会开辟一段新的内存存储数据，不会在原数组的内存之上建立视图。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> typedArray = <span class="keyword">new</span> <span class="built_in">Int8Array</span>(<span class="keyword">new</span> <span class="built_in">Uint8Array</span>(<span class="number">4</span>));</span><br></pre></td></tr></table></figure>
+<p>构造函数的参数也可以是一个普通数组，然后直接生成 TypedArray 实例。这时 TypedArray 视图会重新开辟内存，不会在原数组的内存上建立视图。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> typedArray = <span class="keyword">new</span> <span class="built_in">Uint8Array</span>([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]);</span><br><span class="line"><span class="comment">// 转换回普通数组</span></span><br><span class="line"><span class="keyword">let</span> normalArray = <span class="built_in">Array</span>.prototype.slice.call(typedArray);</span><br></pre></td></tr></table></figure>
+<p>普通数组的方法和属性对 TypedArray 数组完全适用。不过 TypedArray 数组没有 concat 方法。另外，TypedArray 数组与普通数组一样部署了 Iterator 接口，可以遍历</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> ui8 = <span class="built_in">Uint8Array</span>.of(<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">let</span> byte <span class="keyword">of</span> ui8) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(byte);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol>
+<li><p>每一种视图的构造函数，都有一个 BYTES_PER_ELEMENT 属性，表示这种数据类型占据的字节数。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Int8Array</span>.BYTES_PER_ELEMENT <span class="comment">// 1</span></span><br><span class="line"><span class="built_in">Uint8Array</span>.BYTES_PER_ELEMENT <span class="comment">// 1</span></span><br><span class="line"><span class="built_in">Int16Array</span>.BYTES_PER_ELEMENT <span class="comment">// 2</span></span><br><span class="line"><span class="built_in">Uint8Array</span>.BYTES_PER_ELEMENT <span class="comment">// 2</span></span><br><span class="line"><span class="built_in">Int32Array</span>.BYTES_PER_ELEMENT <span class="comment">// 4</span></span><br><span class="line"><span class="built_in">Uint32Array</span>.BYTES_PER_ELEMENT <span class="comment">// 4</span></span><br><span class="line"><span class="built_in">Float32Array</span>.BYTES_PER_ELEMENT <span class="comment">// 4</span></span><br><span class="line"><span class="built_in">Float64Array</span>.BYTES_PER_ELEMENT <span class="comment">// 8</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>ArrayBuffer 与字符串的互相转换，有一个前提，即字符串的方法是确定的。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ArrayBuffer 转为字符串，参数为 ArrayBuffer 对象</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">ab2str</span>(<span class="params">buf</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">String</span>.fromCharCode.apply(<span class="literal">null</span>, <span class="keyword">new</span> <span class="built_in">Uint16Array</span>(buf));</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 字符串转为 ArrayBuffer 对象，参数为字符串</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">str2ab</span>(<span class="params">str</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 每个字符占用2个字节</span></span><br><span class="line">    <span class="keyword">const</span> buf = <span class="keyword">new</span> <span class="built_in">ArrayBuffer</span>(str.length * <span class="number">2</span>);</span><br><span class="line">    <span class="keyword">const</span> bufView = <span class="keyword">new</span> <span class="built_in">Uint16Array</span>(buf);</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">let</span> i = <span class="number">0</span>, strLen = str.length; i &lt; str.length; i++) &#123;</span><br><span class="line">        bufView[i] = str.charCodeAt(i);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> buf;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>溢出<br>TypedArray 数组对于溢出采用的处理方法是求余值。正向溢出的含义是输入值大于当前数据类型的最大值，最后的到的值就等于当前数据类型的最小值加上余值，再减去1；负向溢出等于当前数据类型的最大值减去余值，再加上1。另外，Uint8ClampedArray 视图的溢出与上面的规则有所不同，负向溢出都等于0，正向溢出都等于255。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 范围是 [-128, 127]</span></span><br><span class="line"><span class="keyword">let</span> int = <span class="keyword">new</span> <span class="built_in">Int8Array</span>(<span class="number">1</span>);</span><br><span class="line">int8[<span class="number">0</span>] = <span class="number">128</span>; <span class="comment">// -129</span></span><br><span class="line">int8[<span class="number">0</span>] = <span class="number">-129</span>; <span class="comment">// 127</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>TypedArray.prototype.buffer 返回整段内存区域对应的 ArrayBuffer 对象，该属性为只读属性。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 下面 a 视图对象和 b 视图对象对应同一个 ArrayBuffer 对象，即同一段内存</span></span><br><span class="line"><span class="keyword">const</span> a = <span class="keyword">new</span> <span class="built_in">Float32Array</span>(<span class="number">64</span>);</span><br><span class="line"><span class="keyword">const</span> b = <span class="keyword">new</span> <span class="built_in">Uint8Array</span>(a.buffer);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>TypedArray.prototype.byteLength 返回 TypedArray数组占据的内存长度，单位为字节。只读属性。</p>
+</li>
+<li>TypedArray.prototype.byteOffset 返回 TypedArray 数组从底层 ArrayBuffer 对象的哪个字节开始。只读属性。</li>
+<li>TypedArray.prototype.length TypedArray 数组含有多少个成员。<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> a = <span class="keyword">new</span> <span class="built_in">Int16Array</span>(<span class="number">8</span>);</span><br><span class="line">a.length; <span class="comment">// 8</span></span><br><span class="line">a.byteLength; <span class="comment">// 16</span></span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>8.TypedArray.prototype.set(buf[, start]) 用于复制数组(普通数组或 TypedArray 数组)，即将一段内存完全复制到另一段内存。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> a = <span class="keyword">new</span> <span class="built_in">Uint16Array</span>(<span class="number">8</span>);</span><br><span class="line"><span class="keyword">let</span> b = <span class="keyword">new</span> <span class="built_in">Uint16Array</span>(<span class="number">10</span>);</span><br><span class="line"><span class="comment">// 从 b[2] 开始复制 a 数组的内容</span></span><br><span class="line">b.set(a, <span class="number">2</span>);</span><br></pre></td></tr></table></figure></p>
+<ol start="9">
+<li><p>TypedArray.prototype.subarray(start[, end]) 对于 TypedArray 数组的一部分再建立一个新的视图。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> a = <span class="keyword">new</span> <span class="built_in">Uint16Array</span>(<span class="number">8</span>);</span><br><span class="line"><span class="keyword">let</span> b = a.subarray(<span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line">a.byteLength; <span class="comment">// 16</span></span><br><span class="line">b.byteLength; <span class="comment">// 2</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>TypedArray.prototype.slice(start[, end]) 返回一个指定位置的新的 TypedArray 实例。</p>
+</li>
+<li>TypedArray.of() 将参数转为一个 TypedArray 实例。</li>
+<li>Float32Array.of(0.151, -8, 3.7) // Float32Array [0.151, -8, 3.7]<br>TypedArray.from(arr[, fn]) 接受一个可遍历的数据结构(比如数组)作为参数，返回一个基于此结构的 TypedArray 实例。参数 fn 是一个函数，对每个元素进行遍历。<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 可以将一种 TypedArray 实例转为另一种</span></span><br><span class="line"><span class="keyword">let</span> ui16 = <span class="built_in">Uint16Array</span>.from(<span class="built_in">Uint8Array</span>.of(<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>));</span><br><span class="line">ui16 <span class="keyword">instanceof</span> <span class="built_in">Uint16Array</span>; <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="复合视图"><a href="#复合视图" class="headerlink" title="复合视图"></a>复合视图</h3><p>由于视图的构造函数可以指定起始位置和长度，所以在同一段内存中可以依次存放不同类型的数据，这叫做“复合视图”。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> buffer = <span class="keyword">new</span> <span class="built_in">ArrayBuffer</span>(<span class="number">24</span>);</span><br><span class="line"><span class="keyword">const</span> idView = <span class="keyword">new</span> <span class="built_in">Uint32Array</span>(buffer, <span class="number">0</span>, <span class="number">1</span>);</span><br><span class="line"><span class="keyword">const</span> usernameView = <span class="keyword">new</span> <span class="built_in">Uint8Array</span>(buffer, <span class="number">4</span>, <span class="number">16</span>);</span><br><span class="line"><span class="keyword">const</span> amountDueView = <span class="keyword">new</span> <span class="built_in">Float32Array</span>(buffer, <span class="number">20</span>, <span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+<p>上面代码将一个24字节的 ArrayBufer 对象分成了3个部分：</p>
+<ul>
+<li>字节0到字节3： 1个32位无符号整数。</li>
+<li>字节4到字节19： 16个8位整数。</li>
+<li>字节20到字节23：1个32位浮点数。</li>
+</ul>
+<h3 id="DataView-视图"><a href="#DataView-视图" class="headerlink" title="DataView 视图"></a>DataView 视图</h3><p>如果一段数据包括多种类型，这时除了建立 ArrayBuffer 对象的复合视图外，还可以通过 DataView 视图进行操作。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="built_in">DataView</span>(<span class="built_in">ArrayBuffer</span> [, start, length])</span><br></pre></td></tr></table></figure>
+<ol>
+<li>DataView.prototype.buffer 返回对应的 ArrayBuffer 对象。</li>
+<li>DataView.prototype.byteLength 返回占据的内存字节长度。</li>
+<li>DataView.prototype.byteOffset 返回当前视图从对应的 ArrayBuffer 对象的哪个字节开始。</li>
+</ol>
+<p>DataView 实例提供8个方法读取内存，这一系列方法的参数都是一个字节序号(不能是负数，否则会报错)，表示从哪个字节开始读取。第二个参数指定数据的存储方式，默认是大端字节序解读数据，如果需要使用小端字节序解读，该参数指定 true。</p>
+<ol>
+<li>getInt8(nun [, false]) 读取1个字节，返回一个8位整数。</li>
+<li>getUint8(nun [, false]) 读取1个字节，返回一个无符号的8位整数。</li>
+<li>getInt16(nun [, false]) 读取2个字节，返回一个16位整数。</li>
+<li>getUint16(nun [, false]) 读取2个字节，返回一个无符号的16位整数。</li>
+<li>getInt32(nun [, false]) 读取4个字节，返回一个32位整数。</li>
+<li>getUint32(nun [, false]) 读取4个字节，返回一个无符号的32位整数。</li>
+<li>getFloat32(nun [, false]) 读取4个字节，返回一个32位浮点数。</li>
+<li>getFloat64(nun [, false]) 读取8个字节，返回一个64位浮点数。</li>
+</ol>
+<p>DataView 视图提供8个方法写入内存，第一个参数是字节序号，表示从哪个字节开始写入，第二个参数为写入的数据，第三个参数 true 表示使用小端字节序写入。</p>
+<ol>
+<li>setInt8(num, data[, false]) 写入1个字节的8位整数。</li>
+<li>setUint8(num, data[, false]) 写入1个字节的8位无符号整数。</li>
+<li>setInt16(num, data[, false]) 写入2个字节的16位整数。</li>
+<li>seUint16(num, data[, false]) 写入2个字节的16位无符号整数。</li>
+<li>setInt32(num, data[, false]) 写入4个字节的32位整数。</li>
+<li>setUint32(num, data[, false]) 写入4个字节的32位无符号整数。</li>
+<li>setFloat32(num, data[, false]) 写入4个字节的32位浮点数。</li>
+<li>setFloat64(num, data[, false]) 写入8个字节的64位浮点数。</li>
+</ol>
+<h3 id="Set-和-Map-数据结构"><a href="#Set-和-Map-数据结构" class="headerlink" title="Set 和 Map 数据结构"></a>Set 和 Map 数据结构</h3><h4 id="Set"><a href="#Set" class="headerlink" title="Set"></a>Set</h4><p>ES6 提供了新的数据结构 Set，类似于数组，但是成员的值都是唯一的，没有重复的值。<br>Set 本身是一个构造函数。向 Set 加入值不会发生类型转换，内部判断两个值是否相同使用的算法类似于精确相等运算符。</p>
+<ol>
+<li>Set.prototype.constructor 构造函数，默认就是 Set 函数。</li>
+<li>Set.prototype.size 返回 Set 实例的成员总数。</li>
+</ol>
+<p>Set 实例的方法分为两大类：操作方法(用于操作数据)和遍历方法(用于遍历成员)。下面介绍4个操作方法：</p>
+<ol>
+<li>add(value) 添加某个值，返回 Set 结构本身。</li>
+<li>delete(value) 删除某个值，返回一个布尔值，表示删除是否成功。</li>
+<li>has(value) 返回一个布尔值，表示参数是否为 Set 的成员。</li>
+<li>clear() 清楚所有成员，没有返回值。</li>
+<li>Array.from 方法可以将 Set 结构转为数组。如下去除数组的重复元素的方法：</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">dedupe</span>(<span class="params">array</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">Array</span>.from(<span class="keyword">new</span> <span class="built_in">Set</span>(array));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Set 结构实例有4个遍历方法，可用于遍历成员。其中，keys、values 和 entries 方法返回的都是遍历器对象。由于 Set 结构没有键名，只有键值，所以 keys 和 values 方法的行为完全一致。</p>
+<ol>
+<li>keys() 返回一个键名的遍历器</li>
+<li>values() 返回一个键值的遍历器。</li>
+<li>entries() 返回一个键值对的遍历器。</li>
+<li>forEach() 使用回调函数遍历每个成员。</li>
+</ol>
+<p>Set 结构的实例默认可遍历，其默认遍历器生成函数就是它的 values 方法。这意味着，可以省略 values 方法，直接用 for…of 循环遍历 Set。由于扩展运算符(…)内部使用 for…of 循环，所以也可以用于 Set 结构。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="keyword">set</span> = new Set(['red', 'green', 'blue']);</span><br><span class="line">for(let x of <span class="keyword">set</span>) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(x);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// red, green, blue</span></span><br><span class="line"><span class="keyword">let</span> arr = [...set]; <span class="comment">// ['red', 'green', 'blue']</span></span><br></pre></td></tr></table></figure>
+<h4 id="WeakSet"><a href="#WeakSet" class="headerlink" title="WeakSet"></a>WeakSet</h4><p>WeakSet 结构与 Set 类似，也是不重复的值的集合。但是与 Set 有两个区别：</p>
+<ol>
+<li>WeakSet 的成员只能是对象，而不能是其他类型的值。</li>
+<li>WeakSet 中的对象都是弱引用，即垃圾回收机制不考虑 WeakSet 对该对象的引用。即如果其他对象都不再引用该对象，那么垃圾回收机制会自动回收该对象所占用的内存，不考虑该对象还存在于 WeakSet 中。这个特点意味着无法引用 WeakSet 的成员，因此 WeakSet 是不可遍历的。</li>
+</ol>
+<p>WeakSet 结构有以下3个方法：</p>
+<ol>
+<li>WeakSet.prototype.add(value) 向 WeakSet 实例添加一个新成员。</li>
+<li>WeakSet.prototype.delete(value) 清楚 WeakSet 实例的指定成员。</li>
+<li>WeakSet.prototype.has(value) 返回一个布尔值，表示某个值是否在 WeakSet 实例中。</li>
+</ol>
+<h4 id="Map"><a href="#Map" class="headerlink" title="Map"></a>Map</h4><p>JavaScript 的对象（Object）本质上是键值对的集合（hash 结构），但是只能用字符串作为键。而 Map 数据结构，类似于对象，也是键值对的集合，但是“键”的范围不限于字符串，各种类型的值（包括对象）都可以当作键。作为构造函数，Map 接受一个数组作为参数，该数组的成员是一个个表示键值对数组。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> map = <span class="keyword">new</span> <span class="built_in">Map</span>([[<span class="string">'name'</span>, <span class="string">'张三'</span>], [<span class="string">'title'</span>, <span class="string">'author'</span>]]);</span><br><span class="line">map.size <span class="comment">// 2</span></span><br></pre></td></tr></table></figure>
+<p>注意，只有对同一个对象的引用，Map 结构才将其视为同一个键。Map 的键实际上是跟内存地址绑定的，只要内存地址不一样，就视为两个键。如果 Map 的键是一个简单类型的值，则只要两个值严格相等，Map 就将其视为一个键，包括0和-0。另外，虽然 NaN 不严格等于自身，但 Map 将其视为同一个键。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> map = <span class="keyword">new</span> <span class="built_in">Map</span>();</span><br><span class="line">map.set([<span class="string">'a'</span>], <span class="number">555</span>);</span><br><span class="line">map.get([<span class="string">'a'</span>]); <span class="comment">// undefined</span></span><br></pre></td></tr></table></figure>
+<ol>
+<li>Map.prototype.size 返回 Map 结构的成员总数。</li>
+<li>Map.prototype.set(key, value) 设置 key 所对应的键值，然后返回整个 Map 结构，如果 key 已经有值，则键值会被更新。</li>
+<li>Map.prototype.get(key) 读取 key 对应的键值，如果找不到 key，返回 undefined。</li>
+<li>Map.prototype.has(key) 返回一个布尔值，表示某个值是否在 Map 数据结构中。</li>
+<li>Map.prototype.delete(key) 删除某个键，返回 true。如果删除失败，则返回 fal</li>
+<li>Map.prototype.clear() 清楚所有成员，没有返回值。</li>
+<li>Map.prototype.keys() 返回键名的遍历器。</li>
+<li>Map.prototype.values() 返回键值的遍历器。</li>
+<li>Map.prototype.entries() 返回所有成员的遍历器。</li>
+<li>Map.prototype.forEach() 遍历 Map 的所有成员。</li>
+<li>Map 结构的默认遍历器接口就是 entries 方法。Map 结构转为数组结构比较快速的方法是结合使用扩展运算符(…)。</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> map = <span class="keyword">new</span> <span class="built_in">Map</span>([[<span class="number">1</span>, <span class="string">'one'</span>], [<span class="number">2</span>, <span class="string">'two'</span>], [<span class="number">3</span>, <span class="string">'three'</span>]]);</span><br><span class="line">map[<span class="built_in">Symbol</span>.iterator] === map.entries;</span><br><span class="line">[...map.entries()] <span class="comment">// [[1, 'one'], [2, 'two'], [3, 'three']]</span></span><br><span class="line">[...map] <span class="comment">// [[1, 'one'], [2, 'two'], [3, 'three']]</span></span><br></pre></td></tr></table></figure>
+<h3 id="WeakMap"><a href="#WeakMap" class="headerlink" title="WeakMap"></a>WeakMap</h3><p>WeakMap 结构与 Map 结构基本类似，唯一的区别是它只接受对象作为键名（null除外），不接受其他类型的值作为键名，而且键名所指向的对象不计入垃圾回收机制。WeakMap 只有 4 个方法可用：get()、set()、has() 和 delete()。</p>
+<h3 id="Iterator-和-for…of-循环"><a href="#Iterator-和-for…of-循环" class="headerlink" title="Iterator 和 for…of 循环"></a>Iterator 和 for…of 循环</h3><h4 id="Iterator-的概念"><a href="#Iterator-的概念" class="headerlink" title="Iterator 的概念"></a>Iterator 的概念</h4><p>遍历器(Iterator)是一种接口，为各种不同的数据结构提供统一的访问机制。任何数据接口，只要部署 Iterator 接口，就可以完成遍历操作(即依次处理该数据结构的所有成员)。凡是部署了 Symbol.iterator 属性的数据结构，就称为部署了遍历器接口。ES6 中，有3类数据结构原生具备 Iterator 接口：数组、某些类似数组的对象以及 Set 和 Map 结构。调用这个接口，就会返回一个遍历器对象。Iterator 的作用有3个：</p>
+<ol>
+<li>为各种数据结构提供一个统一的，简便的访问接口。</li>
+<li>数据结构的成员能够按某种次序排列。</li>
+<li>主要供 for…of 消费。</li>
+</ol>
+<p>Iterator 的遍历过程是这样的：</p>
+<ol>
+<li>创建一个指针对象，指向当前数据结构的起始位置。遍历器对象本质上就是一个指针对象。</li>
+<li>第一次调用指针对象的 next 方法，可以将指针指向数据结构的第一个成员。</li>
+<li>第二次调用指针对象的 next 方法，指针就指向数据结构的第二个成员。</li>
+<li>不断调用指针对象的 next 方法，直到它指向数据结构的结束位置。</li>
+<li>每一次调用 next 方法，都会返回数据结构的当前成员的信息。具体来说，就是返回一个包含 value 和 done 两个属性的对象。其中，value 属性是当前成员的值，done 属性是一个布尔值，表示遍历是否结束。</li>
+</ol>
+<p>以下几种场合会默认调用 Iterator 接口:</p>
+<ol>
+<li>for…of 循环</li>
+<li>解构赋值：对数组和 Set 结构进行解构赋值时</li>
+<li>扩展运算符(…)</li>
+<li><p>yield* 后面跟的是一个可遍历的结构，会调用该结构的遍历器接口。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> generator = <span class="function"><span class="keyword">function</span>* (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">yield</span>* [<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>];</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">5</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> iterator = generator();</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>其它场合：由于数组的遍历会调用遍历器接口，所以任何接受数组作为参数的场合其实都调用了遍历器接口。例如 Array.from()、Map()、Set()、WeakMap()、WeakSet()、Promise.all()、Promise.race()</p>
+</li>
+<li>字符串：字符串是一个类似数组的对象，也原生具有 Iterator 接口。</li>
+</ol>
+<h3 id="遍历器对象的-return-和-throw"><a href="#遍历器对象的-return-和-throw" class="headerlink" title="遍历器对象的 return 和 throw"></a>遍历器对象的 return 和 throw</h3><p>遍历器对象的 next 方法是必须部署的，return 和 throw 方法是可选的。return 的使用场景：如果 fro…of 循环提前退出(通常是因为出错，或者有 break 或 continue 语句)，就会调用 return 方法；如果一个对象在完成遍历前需要清理或释放资源，就可以部署 return 方法。return 方法必须返回一个对象。throw 方法主要是配合 Generator 函数使用。</p>
+<h3 id="Generator-函数"><a href="#Generator-函数" class="headerlink" title="Generator 函数"></a>Generator 函数</h3><p>Generator 函数是一个普通函数，但有两个特征：一是 function 命令与函数名之间有一个星号；二是函数体内部使用 yield 语句定义不同的内部状态。调用 Generator 函数后，该函数并不执行，返回的是一个指向内部状态的指针对象，即遍历器对象。下一步，必须调用遍历器对象的 next 方法，使得指针移向下一个状态。Generator 函数可以不用 yield 语句，就变成了一个单纯的暂缓执行函数。</p>
+<p>遍历器对象的 next 方法的运行逻辑如下：</p>
+<ol>
+<li>遇到 yield 语句就暂定执行后面的操作，并将紧跟在 yield 后的表达式的值作为返回的对象的 value 属性值。</li>
+<li>下一次调用 next 方法时再继续往下执行，直到遇到下一条 yield 语句。</li>
+<li>如果没有再遇到新的 yield 语句，就一直运行到函数结束，知道 return 语句为止，并将 return 语句后面的表达式的值作为返回的对象的 value 属性。</li>
+<li>如果该函数没有 return 语句，则返回的对象的 value 属性值为 undefined。</li>
+</ol>
+<h4 id="与-Iterator-接口的关系"><a href="#与-Iterator-接口的关系" class="headerlink" title="与 Iterator 接口的关系"></a>与 Iterator 接口的关系</h4><p>任意一个对象的 Symbol.iterator 方法等于该对象的遍历器对象生成函数，调用该函数会返回该对象的一个遍历器对象。遍历器对象本身也有 Symbol.iterator 方法，执行后返回自身。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> * <span class="title">gen</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line"><span class="keyword">let</span> g = gen();</span><br><span class="line">g[<span class="built_in">Symbol</span>.iterator] === g; <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<h4 id="next-方法的参数"><a href="#next-方法的参数" class="headerlink" title="next 方法的参数"></a>next 方法的参数</h4><p>yield 语句本身没有返回值，或者说总是返回 undefined，next 方法可以带一个参数，该参数会被当作上一条 yield 语句的返回值。所以第一次使用 next 方法时不能带有参数。</p>
+<h4 id="for…of-循环"><a href="#for…of-循环" class="headerlink" title="for…of 循环"></a>for…of 循环</h4><p>for…of 循环可以自动遍历 Generator 函数，且此时不再需要调用 next 方法。一旦 next 方法的返回对象的 done 属性为 true，for…of循环就会终止，且不包含该返回对象，所以下面的 return 语句返回的3不包括在 for…of 循环中。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">foo</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">3</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> v <span class="keyword">of</span> foo()) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(v);</span><br><span class="line">&#125; <span class="comment">// 1 2</span></span><br></pre></td></tr></table></figure>
+<h5 id="Generator-prototype-throw"><a href="#Generator-prototype-throw" class="headerlink" title="Generator.prototype.throw()"></a>Generator.prototype.throw()</h5><p>Generator 函数返回的遍历器对象都有一个 throw 方法，可以在函数体外抛出错误，然后在 Generator 函数体内捕获。下面的代码中，遍历器对象i连续抛出两个错误，第一个错误被 Generator 函数体内的 catch 语句捕获，然后 Generator 函数执行完成，于是第二个错误被函数体外的 catch 语句捕获。如果 Generator 函数内部部署了 try…catch 代码块，那么遍历器的 throw 方法抛出的错误不影响下一次遍历，否则遍历直接终止且 throw 方法抛出的错误将被外部 try…catch 代码块捕获。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> g = <span class="function"><span class="keyword">function</span> * (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="literal">true</span>) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">yield</span>;</span><br><span class="line">        &#125; <span class="keyword">catch</span>(e) &#123;</span><br><span class="line">            <span class="built_in">console</span>.log(<span class="string">'内部捕获'</span>, e);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">let</span> i = g();</span><br><span class="line">i.next();</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    i.throw(<span class="string">'a'</span>);</span><br><span class="line">    i.throw(<span class="string">'b'</span>);</span><br><span class="line">&#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'外部捕获'</span>, e);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 内部捕获 a</span></span><br><span class="line"><span class="comment">// 外部捕获 b</span></span><br></pre></td></tr></table></figure>
+<p>Generator 函数内抛出的错误也可以被函数体外的 catch 捕获。一旦 Generator 执行过程中抛出错误，就不会再执行下去了。如果此后还调用 next 方法，将返回一个 value 属性等于 undefined、done 属性等于 true 的对象，即 javascript 引擎认为这个 Generator 已经运行结束。</p>
+<h4 id="Generator-prototype-return"><a href="#Generator-prototype-return" class="headerlink" title="Generator.prototype.return()"></a>Generator.prototype.return()</h4><p>Generator 函数返回的遍历器对象还有一个 return 方法，可以返回给定的值，并终结 Generator 函数的遍历。如果 return 方法调用时不提供参数，则返回值的 value 属性为 undefined。如果 Generator 函数内部有 try…finally 代码块，那么 return 方法会推迟到 finally 代码块执行完再执行。</p>
+<h4 id="yield-语句"><a href="#yield-语句" class="headerlink" title="yield* 语句"></a>yield* 语句</h4><p>用来在一个 Generator 函数里面执行另一个 Generator 函数。如果 yield 命令后面跟的是一个遍历器对象，那么需要在 yield 命令后面加上星号，表明返回的是一个遍历器对象。这被称为 yield 语句。任何数据结构只要有 Iterator 接口，就可以用 yield 遍历。如果被代理的 Generator 函数有 return 语句，那么可以向代理它的 Generator 函数返回数据。</p>
+<p>作为对象属性的 Generator 函数</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> obj = &#123;</span><br><span class="line">    * myGenerator1() &#123;&#125;,</span><br><span class="line">    myGenerator2: <span class="function"><span class="keyword">function</span>* (<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><ol>
+<li>异步操作的同步化表达</li>
+<li>控制流管理</li>
+<li>部署 Iterator 接口</li>
+<li>作为数据结构：可以对任意表达式提供类似数组的接口</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://qingguoing.com/2017/09/25/ES6-学习笔记-2/" data-id="cjxhnmilm0031jp8cfe13zc6r" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ES6/">ES6</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/10/10/ES6-学习笔记-3/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          ES6 学习笔记(3)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/09/24/ES6-学习笔记-1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">ES6 学习笔记(1)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Babel/">Babel</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Diary/">Diary</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/HTTP/">HTTP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/JavaScript/">JavaScript</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/React/">React</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/python/">python</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/技术论坛/">技术论坛</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Async/">Async</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/D2/">D2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ES6/">ES6</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EventLoop/">EventLoop</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Flux/">Flux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/H5/">H5</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HTTP/">HTTP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JS-异步处理系列/">JS 异步处理系列</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node/">Node</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Performance/">Performance</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Promise/">Promise</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redux/">Redux</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vue/">Vue</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/awk/">awk</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel-plugin/">babel-plugin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/koa/">koa</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/learning/">learning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/生活随笔/">生活随笔</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/自动化测试/">自动化测试</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Async/" style="font-size: 10px;">Async</a> <a href="/tags/D2/" style="font-size: 10px;">D2</a> <a href="/tags/ES6/" style="font-size: 16.67px;">ES6</a> <a href="/tags/EventLoop/" style="font-size: 13.33px;">EventLoop</a> <a href="/tags/Flux/" style="font-size: 13.33px;">Flux</a> <a href="/tags/H5/" style="font-size: 10px;">H5</a> <a href="/tags/HTTP/" style="font-size: 10px;">HTTP</a> <a href="/tags/JS-异步处理系列/" style="font-size: 20px;">JS 异步处理系列</a> <a href="/tags/Node/" style="font-size: 10px;">Node</a> <a href="/tags/Performance/" style="font-size: 10px;">Performance</a> <a href="/tags/Promise/" style="font-size: 10px;">Promise</a> <a href="/tags/Redux/" style="font-size: 10px;">Redux</a> <a href="/tags/Vue/" style="font-size: 10px;">Vue</a> <a href="/tags/awk/" style="font-size: 10px;">awk</a> <a href="/tags/babel-plugin/" style="font-size: 10px;">babel-plugin</a> <a href="/tags/koa/" style="font-size: 13.33px;">koa</a> <a href="/tags/learning/" style="font-size: 10px;">learning</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/vscode/" style="font-size: 10px;">vscode</a> <a href="/tags/生活随笔/" style="font-size: 10px;">生活随笔</a> <a href="/tags/自动化测试/" style="font-size: 10px;">自动化测试</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">June 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">January 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">November 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">October 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">September 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">April 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">August 2016</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/06/27/自动处理对象结构中-null-字段的-babel-插件/">自动处理对象结构中 null 字段的 babel 插件</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/26/如何编写好一个测试用例/">如何编写好一个测试用例</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/20/JS-异步处理系列（四）-async-await/">JS 异步处理系列（四）- async &amp; await</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/19/JS-异步处理系列（三）-Promise/">JS 异步处理系列（三）- Promise</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/14/JS-异步处理系列（二）-Node-Event-Loop/">JS 异步处理系列（二）- Node Event Loop</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 qingguoing<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
